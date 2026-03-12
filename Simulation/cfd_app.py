@@ -56,7 +56,6 @@ def rise_time(x,y):
     h_index = np.where(np.diff(np.sign(y - 0.9*maximum)))[0][0]
     l_index = np.where(np.diff(np.sign(y- 0.1*maximum )))[0][0]
     
-    
     hi = lin_interp_x(x, y, h_index, 0.9*maximum)
     lo = lin_interp_x(x, y, l_index, 0.1*maximum)
 
@@ -74,7 +73,7 @@ fig.add_trace(go.Scatter(x=x, y=y, name="signal"))
 fig.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
 fig.add_trace(go.Scatter(x=x, y=attsig, name="attenuated"))
 fig.add_trace(go.Scatter(x=x, y=cfd, name="CFD"))
-fig.add_trace(go.Scatter(x=[zcross, zcross], y=[-100, 100], mode="lines", name="zero crossing", line=dict(dash="dash")))
+fig.add_trace(go.Scatter(x=[zcross, zcross], y=[-3, 3], mode="lines", name="zero crossing", line=dict(dash="dash")))
 
 fig.update_layout(
     title="CFD Simulation",
@@ -103,34 +102,57 @@ app.layout = html.Div([
             ),
             
             html.Div([
-                html.H4(
-                    "Zero Crossing:",
-                    style={"margin": "2px"}
-                ),
+                html.Div([
+                    html.H4(
+                        "Zero Crossing:",
+                        style={"margin": "2px"}
+                    ),
 
-                html.Div(id="zero-crossing-value",
-                    style={
-                        "fontSize": "20px",
-                        "marginTop": "0px",
-                        "marginBottom": "0px"
-                    }
-                ),
-            ]),
+                    html.Div(id="zero-crossing-value",
+                        style={
+                            "fontSize": "22px",
+                            "padding": "8px 14px",
+                            "border": "2px solid #448",
+                            "borderRadius": "6px",
+                            # "backgroundColor": "#111",
+                            # "color": "#00c55f",
+                            "display": "inline-block",
+                            "minWidth": "140px",
+                            "textAlign": "center",
+                            "fontFamily": "monospace",
+                            # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
+                        }
+                    ),
+                ]),
 
-            html.Div([
-                html.H4(
-                    "Rise Time:",
-                    style={"margin": "2px"}
-                ),
+                html.Div([
+                    html.H4(
+                        "Rise Time:",
+                        style={"margin": "2px"}
+                    ),
 
-                html.Div(id="rise-time",
-                    style={
-                        "fontSize": "20px",
-                        "marginTop": "0px",
-                        "marginBottom": "0px"
-                    }
-                ),
-            ])
+                    html.Div(id="rise-time",
+                        style={
+                            "fontSize": "22px",
+                            "padding": "8px 14px",
+                            "border": "2px solid #448",
+                            "borderRadius": "6px",
+                            # "backgroundColor": "#111",
+                            # "color": "#00c55f",
+                            "display": "inline-block",
+                            "minWidth": "140px",
+                            "textAlign": "center",
+                            "fontFamily": "monospace",
+                            # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
+                        }
+                    ),
+                ])
+            ],
+            style={
+                "display": "flex",
+                "flexDirection": "row",
+                "gap": "40px",
+            })
         ],
         style={
             # "position": "relative",
@@ -155,13 +177,6 @@ app.layout = html.Div([
                 
             ],
             value=["ampl", "delay", "att"],
-            # style={
-            #     "position": "absolute",
-            #     "bottom": "200px",
-            #     "right": "270px",
-            #     "background": "white",
-            #     "padding": "5px"
-            # }
             style={
                 "display": "flex",
                 "flexWrap": "wrap",
@@ -209,8 +224,12 @@ app.layout = html.Div([
     })
 
 ],
-style={"display": "flex",
-        "flexDirection": "row"
+style={
+    "display": "flex",
+    "flexDirection": "row",
+    # "backgroundColor": "#0f172a",
+    # "color": "white",
+    # "minHeight": "100vh",
 })       
 
 

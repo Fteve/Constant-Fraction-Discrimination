@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.stats import landau
+from scipy.optimize import minimize_scalar
 import plotly.graph_objects as go
 
 from dash import Dash, dcc, html, Input, Output, Patch
@@ -14,9 +15,12 @@ att = 0.2
 
 # initial signal values
 x = np.linspace(-5, 20, 1000)
-y = ampl * landau.pdf(x, loc=loc, scale=scale)
+f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale) # lambda function for mpv calculation
+y = -f(x)
 
+# y = ampl * landau.pdf(x, loc=loc, scale=scale)
 
+# calculated signals
 delsig = np.interp(x-delay, x, y, left=0, right=0)
 attsig = -att * y
 cfd = delsig + attsig
@@ -65,6 +69,9 @@ def rise_time(x,y):
 
 zcross = zero_crossing(x, cfd)
 tr = rise_time(x,y)
+# Looks for mpv including non-sampled points
+mpv = minimize_scalar(f).x
+
 
 # generate figure
 fig = go.Figure()
@@ -104,11 +111,11 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     html.H4(
-                        "Zero Crossing:",
+                        "MPV:",
                         style={"margin": "2px"}
                     ),
 
-                    html.Div(id="zero-crossing-value",
+                    html.Div(id="mpv",
                         style={
                             "fontSize": "22px",
                             "padding": "8px 14px",
@@ -146,7 +153,30 @@ app.layout = html.Div([
                             # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
                         }
                     ),
-                ])
+                ]),
+
+                html.Div([
+                    html.H4(
+                        "Zero Crossing:",
+                        style={"margin": "2px"}
+                    ),
+
+                    html.Div(id="zero-crossing-value",
+                        style={
+                            "fontSize": "22px",
+                            "padding": "8px 14px",
+                            "border": "2px solid #448",
+                            "borderRadius": "6px",
+                            # "backgroundColor": "#111",
+                            # "color": "#00c55f",
+                            "display": "inline-block",
+                            "minWidth": "140px",
+                            "textAlign": "center",
+                            "fontFamily": "monospace",
+                            # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
+                        }
+                    ),
+                ]),
             ],
             style={
                 "display": "flex",
@@ -191,7 +221,7 @@ app.layout = html.Div([
 
         html.Div([
             html.Label("scale"),
-            dcc.Slider(id="scale", min=0, max=2, step=0.02, value=scale, updatemode="drag"),
+            dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
         ], id="scaleSlider"),
 
         html.Div([
@@ -237,6 +267,7 @@ style={
     Output("cfd-plot", "figure"),
     Output("zero-crossing-value", "children"),
     Output("rise-time", "children"),
+    Output("mpv", "children"),
     Output("locSlider", "style"),
     Output("scaleSlider", "style"),
     Output("satSlider", "style"),
@@ -254,8 +285,9 @@ style={
 )
 
 def update_plot(loc, scale, sat, ampl, delay, att,  selected):
-
-    y = ampl * landau.pdf(x, loc=loc, scale=scale)
+    f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale)
+    y = -f(x)
+    # y = ampl * landau.pdf(x, loc=loc, scale=scale)
 
     for i in range(len(x)):
             if (y[i] > sat):
@@ -267,6 +299,7 @@ def update_plot(loc, scale, sat, ampl, delay, att,  selected):
 
     zcross = zero_crossing(x, cfd)
     tr = rise_time(x,y)
+    mpv = minimize_scalar(f).x
 
     patch = Patch()
     patch["data"][0]["y"] = y
@@ -283,7 +316,7 @@ def update_plot(loc, scale, sat, ampl, delay, att,  selected):
     att_style = {"display": "block"} if "att" in selected else {"display": "none"}
 
 
-    return patch, f"{zcross:.3f}", f"{tr:.3f}", loc_style, scale_style, sat_style, ampl_style, delay_style, att_style 
+    return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}", loc_style, scale_style, sat_style, ampl_style, delay_style, att_style 
 
 if __name__ == "__main__":
     app.run(debug=True)

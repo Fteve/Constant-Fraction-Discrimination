@@ -101,96 +101,29 @@ app.layout = html.Div([
     html.Div([
          
         html.Div([
-            dcc.Graph(figure=fig, id="cfd-plot", 
-                style={
-                    "flex": "3",
-                    "marginBottom": "0px"
-                }
-            ),
+            dcc.Graph(figure=fig, id="cfd-plot", className="graph-container"),
             
             html.Div([
                 html.Div([
-                    html.H4(
-                        "MPV:",
-                        style={"margin": "2px"}
-                    ),
-
-                    html.Div(id="mpv",
-                        style={
-                            "fontSize": "22px",
-                            "padding": "8px 14px",
-                            "border": "2px solid #448",
-                            "borderRadius": "6px",
-                            # "backgroundColor": "#111",
-                            # "color": "#00c55f",
-                            "display": "inline-block",
-                            "minWidth": "140px",
-                            "textAlign": "center",
-                            "fontFamily": "monospace",
-                            # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
-                        }
-                    ),
+                    html.H4("MPV:", className="slider-label"),
+                    html.Div(id="mpv", className="display"),
                 ]),
 
                 html.Div([
-                    html.H4(
-                        "Rise Time:",
-                        style={"margin": "2px"}
-                    ),
-
-                    html.Div(id="rise-time",
-                        style={
-                            "fontSize": "22px",
-                            "padding": "8px 14px",
-                            "border": "2px solid #448",
-                            "borderRadius": "6px",
-                            # "backgroundColor": "#111",
-                            # "color": "#00c55f",
-                            "display": "inline-block",
-                            "minWidth": "140px",
-                            "textAlign": "center",
-                            "fontFamily": "monospace",
-                            # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
-                        }
-                    ),
+                    html.H4("Rise Time:", className="slider-label"),
+                    html.Div(id="rise-time", className="display"),
                 ]),
 
                 html.Div([
-                    html.H4(
-                        "Zero Crossing:",
-                        style={"margin": "2px"}
-                    ),
-
-                    html.Div(id="zero-crossing-value",
-                        style={
-                            "fontSize": "22px",
-                            "padding": "8px 14px",
-                            "border": "2px solid #448",
-                            "borderRadius": "6px",
-                            # "backgroundColor": "#111",
-                            # "color": "#00c55f",
-                            "display": "inline-block",
-                            "minWidth": "140px",
-                            "textAlign": "center",
-                            "fontFamily": "monospace",
-                            # "boxShadow": "inset 6px 5px 4px rgba(0,70,110,0.6)"
-                        }
-                    ),
+                    html.H4("Zero Crossing:", className="slider-label"),
+                    html.Div(id="zero-crossing-value", className="display"),
                 ]),
             ],
-            style={
-                "display": "flex",
-                "flexDirection": "row",
-                "gap": "40px",
-            })
+            className="display-container"
+            )
         ],
-        style={
-            # "position": "relative",
-            "padding": "20px",
-            "display": "flex",
-            "flexDirection": "column",
-            "gap": "5px",
-        })
+        className="left-column"
+        )
     ]),
 
 
@@ -207,60 +140,46 @@ app.layout = html.Div([
                 
             ],
             value=["ampl", "delay", "att"],
-            style={
-                "display": "flex",
-                "flexWrap": "wrap",
-                "gap": "10px"
-            }
+            className="checklist"
         ),
 
         html.Div([
             html.Label("loc"),
             dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
-        ], id="locSlider"),
+        ], id="locSlider", className="slider-container"),
 
         html.Div([
             html.Label("scale"),
             dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
-        ], id="scaleSlider"),
+        ], id="scaleSlider", className="slider-container"),
 
         html.Div([
             html.Label("Saturation"),
             dcc.Slider(id="sat", min=0.3, max=1, step=0.01, value=sat, updatemode="drag"),
-        ], id="satSlider"),
+        ], id="satSlider", className="slider-container"),
 
         html.Div([
             html.Label("Amplitude"),
             dcc.Slider(id="ampl", min=0.1, max=3, step=0.02, value=ampl, updatemode="drag"),
-        ], id="amplSlider"),
+        ], id="amplSlider", className="slider-container"),
 
         html.Div([
             html.Label("Delay"),
             dcc.Slider(id="delay", min=0, max=3.5, step=0.05, value=delay, updatemode="drag"),
-        ], id="delaySlider"),
+        ], id="delaySlider", className="slider-container"),
 
         html.Div([
             html.Label("Attenuation"),
             dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
-        ], id="attSlider"),
+        ], id="attSlider", className="slider-container"),
 
     ],
-    style={
-        "flex": "1",
-        "padding": "20px",
-        "display": "flex",
-        "flexDirection": "column",
-        "gap": "15px"
-    })
+    className="right-column"
+    )
 
 ],
-style={
-    "display": "flex",
-    "flexDirection": "row",
-    # "backgroundColor": "#0f172a",
-    # "color": "white",
-    # "minHeight": "100vh",
-})       
+className="whole-container"
+)       
 
 
 @app.callback(

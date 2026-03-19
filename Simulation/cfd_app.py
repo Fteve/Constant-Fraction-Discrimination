@@ -3,7 +3,7 @@ from scipy.stats import landau
 from scipy.optimize import minimize_scalar
 import plotly.graph_objects as go
 
-from dash import Dash, dcc, html, Input, Output, State, Patch, no_update
+from dash import Dash, dcc, html, Input, Output, State, Patch, no_update, ctx
 
 # initial parameters
 loc = 0
@@ -15,15 +15,30 @@ att = 0.2
 
 # initial signal values
 x = np.linspace(-5, 20, 1000)
-f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale) # lambda function for mpv calculation
-y = -f(x)
+# f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale) # lambda function for mpv calculation
+# y = -f(x)
 
-# y = ampl * landau.pdf(x, loc=loc, scale=scale)
+# # calculated signals
+# delsig = np.interp(x-delay, x, y, left=0, right=0)
+# attsig = -att * y
+# cfd = delsig + attsig
 
-# calculated signals
-delsig = np.interp(x-delay, x, y, left=0, right=0)
-attsig = -att * y
-cfd = delsig + attsig
+
+def signalCalcs(x, loc, scale, sat, ampl, delay, att):
+    f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale)
+    y = -f(x)
+
+    for i in range(len(x)):
+            if (y[i] > sat):
+                y[i] = sat
+
+    delsig = np.interp(x-delay, x, y, left=0, right=0)
+    attsig = -att * y
+    cfd = delsig + attsig
+
+    return f, y, delsig, attsig, cfd
+
+f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
 
 
 def lin_interp_x(x,y,i,crossing):
@@ -108,7 +123,7 @@ fig1.add_trace(go.Scatter(x=x, y=attsig, name="attenuated"))
 fig1.add_trace(go.Scatter(x=x, y=cfd, name="CFD"))
 fig1.add_trace(go.Scatter(x=[zcross, zcross], y=[-3, 3], mode="lines", name="zero crossing", line=dict(dash="dash")))
 
-fig2.add_trace(go.Scatter(x=x, y=cfd, name="sweep 1"))
+fig2.add_trace(go.Scatter(x=x, y=cfd))
 
 
 # web app layout
@@ -208,13 +223,12 @@ className="whole-container"
 )       
 
 
+
 @app.callback(
-    # Output("cfd-plot", "figure"),
     Output("graph1-store", "data"),
-    # Output("graph2-store", "data"),
-    Output("zero-crossing-value", "children"),
-    Output("rise-time", "children"),
-    Output("mpv", "children"),
+    Output("zero-crossing-value", "children", allow_duplicate=True),
+    Output("rise-time", "children", allow_duplicate=True),
+    Output("mpv", "children", allow_duplicate=True),
     Input("loc", "value"),
     Input("scale", "value"),
     Input("sat", "value"),
@@ -222,26 +236,17 @@ className="whole-container"
     Input("delay", "value"),
     Input("att", "value"),
     Input("active-graph", "data"),
-    # State("graph1-store", "data"),
-    # State("graph2-store", "data")
+    prevent_initial_call=True,
 )
-def update_traces(loc, scale, sat, ampl, delay, att, activeGraph):
+def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
     if activeGraph == "graph2":
         
         return no_update, no_update, no_update, no_update
     
     
     else: 
-        f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale)
-        y = -f(x)
 
-        for i in range(len(x)):
-                if (y[i] > sat):
-                    y[i] = sat
-
-        delsig = np.interp(x-delay, x, y, left=0, right=0)
-        attsig = -att * y
-        cfd = delsig + attsig
+        f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
 
         zcross = zero_crossing(x, cfd)
         tr = rise_time(x,y)
@@ -274,6 +279,52 @@ def update_graph(activeGraph, fig1, fig2):
 
 
 @app.callback(
+    Output("graph2-store", "data"),
+    Output("zero-crossing-value", "children", allow_duplicate=True),
+    Output("rise-time", "children", allow_duplicate=True),
+    Output("mpv", "children", allow_duplicate=True),
+    Input("loc", "value"),
+    Input("scale", "value"),
+    Input("sat", "value"),
+    Input("ampl", "value"),
+    Input("delay", "value"),
+    Input("att", "value"),
+    Input("active-graph", "data"),
+    Input("add-trace", "n_clicks"),
+    State("graph2-store", "data"),
+    prevent_initial_call=True,
+)
+def updateTrace2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2):
+    if activeGraph == "graph1":
+        
+        return no_update, no_update, no_update, no_update
+    
+    
+    else: 
+        button_id = ctx.triggered_id
+
+        f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
+
+        if button_id == "add-trace":
+            s = "trace %d"
+            traceName = s % n_clicks
+            new_trace = go.Scatter(x=x, y=cfd, name=traceName)
+            fig2["data"].append(new_trace)
+            return fig2, no_update, no_update, no_update
+
+        else:
+            zcross = zero_crossing(x, cfd)
+            tr = rise_time(x,y)
+            mpv = minimize_scalar(f).x
+
+            patch = Patch()
+            patch["data"][0]["y"] = cfd
+            
+            return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
+
+
+
+@app.callback(
     Output("active-graph", "data"),
     Input("show-graph-1", "n_clicks"),
     Input("show-graph-2", "n_clicks")
@@ -285,42 +336,6 @@ def switch_graph(graph1Clicks, graph2Clicks):
         activeGraph = "graph1"
 
     return activeGraph
-
-@app.callback(
-    Output("graph2-store", "data"),
-    Input("add-trace", "n_clicks"),
-    State("active-graph", "data"),
-    State("graph2-store", "data"),
-    State("loc", "value"),
-    State("scale", "value"),
-    State("sat", "value"),
-    State("ampl", "value"),
-    State("delay", "value"),
-    State("att", "value"),
-)
-def addTrace(n_clicks, activeGraph, fig2, loc, scale, sat, ampl, delay, att):
-    if activeGraph == "graph2":
-
-        f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale)
-        y = -f(x)
-
-        for i in range(len(x)):
-                if (y[i] > sat):
-                    y[i] = sat
-
-        delsig = np.interp(x-delay, x, y, left=0, right=0)
-        attsig = -att * y
-        cfd = delsig + attsig
-        
-        s = "trace %d"
-        traceName = s % n_clicks
-        new_trace = go.Scatter(x=x, y=cfd, name=traceName)
-
-        fig2["data"].append(new_trace)
-        return fig2
-
-    return no_update
-
 
 @app.callback(
     Output("locSlider", "style"),

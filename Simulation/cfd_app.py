@@ -105,7 +105,7 @@ fig1.update_layout(
 # fig 2 with identical format
 fig2 = go.Figure()
 
-fig1.update_layout(
+fig2.update_layout(
     title="CFD Simulation",
     # xaxis_title="",
     # yaxis_title="",

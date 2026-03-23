@@ -127,29 +127,6 @@ showlegend=True,  # or always True for both
     margin=dict(l=50, r=150, t=80, b=50)
 )
 
-# common_layout = dict(
-#     showlegend=True,  # or always True for both
-#     title="CFD Simulation",
-#     xaxis_range=(-5, 10), 
-#     yaxis_range=(-0.5,1), 
-#     width=1000, 
-#     height=600,
-#     autosize=False,
-#     legend=dict(
-#         x=1.02,    # slightly outside the figure
-#         y=1,
-#         xanchor='left',   # anchor relative to x
-#         yanchor='top',
-#         bgcolor='rgba(0,0,0,0)',  # optional: transparent
-#         bordercolor='black',
-#         borderwidth=1
-#     ),
-#     margin=dict(l=50, r=150, t=80, b=50)
-# )
-# 
-# fig1.update_layout(**common_layout)
-# fig2.update_layout(**common_layout)
-
 # add traces
 fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
 fig1.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
@@ -161,12 +138,12 @@ fig2.add_trace(go.Scatter(x=x, y=cfd))
 
 # table for Sweep Graph
 table = go.Figure(data=[go.Table(
-    header=dict(values=['Trace', 'Zero Crossing', 'Rise Time', 'MPV'],
+    header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'MPV'],
                 # line_color='darkslategray',
                 # fill_color='lightskyblue',
                 align='left'),
 
-    cells=dict(values=[[1], [], [], []],
+    cells=dict(values=[[1], [], [], [], [], [], []],
             #    line_color='darkslategray',
             #    fill_color='lightcyan',
                align='left'))
@@ -419,6 +396,9 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
             # new_row = [n_clicks, mpv, tr, zcross]
             new_row = {
                 "trace": n_clicks,
+                "ampl": ampl,
+                "delay": delay,
+                "att": att, 
                 "zcross": zcross,
                 "tr": tr,
                 "mpv": mpv,
@@ -426,12 +406,15 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
             tableData.append(new_row)
             values = [
                 [row["trace"] for row in tableData],
+                [row["ampl"] for row in tableData],
+                [row["delay"] for row in tableData],
+                [row["att"] for row in tableData],
                 [row["zcross"] for row in tableData],
                 [row["tr"] for row in tableData],
                 [row["mpv"] for row in tableData],
             ]   
             table = go.Figure(data=[go.Table(
-                header=dict(values=['Trace', 'Zero Crossing', 'Rise Time', 'MPV'],
+                header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'MPV'],
                             align='left'),
                 cells=dict(values=values,
                         align='left'))

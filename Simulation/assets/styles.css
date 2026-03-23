@@ -31,7 +31,6 @@
     margin-bottom: 0px;
 }
 
-/* Styling for the divs with individual IDs */
 .display {
     font-size: 22px;
     padding: 8px 14px;
@@ -55,12 +54,11 @@
     gap: 10px;
 }
 
-/* Optional, you can add a background color for the card if you want it */
 .card-background {
     background-color: #111;
     color: #00c55f;
 }
 
-.slider-label {
+.display-label {
     margin: 10px 0;
 }

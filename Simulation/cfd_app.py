@@ -13,17 +13,9 @@ ampl = 1
 delay = 1
 att = 0.2
 
-# initial signal values
 x = np.linspace(-5, 20, 1000)
-# f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale) # lambda function for mpv calculation
-# y = -f(x)
 
-# # calculated signals
-# delsig = np.interp(x-delay, x, y, left=0, right=0)
-# attsig = -att * y
-# cfd = delsig + attsig
-
-
+# Function to calculate component signals
 def signalCalcs(x, loc, scale, sat, ampl, delay, att):
     f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale)
     y = -f(x)
@@ -40,18 +32,18 @@ def signalCalcs(x, loc, scale, sat, ampl, delay, att):
 
 f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
 
-
+# Function to calculate interpolation
+# Used in zero crossing and rise time calculations
 def lin_interp_x(x,y,i,crossing):
-    # points around crossing
     x1, x2 = x[i], x[i+1]
     y1, y2 = y[i], y[i+1]
     
-    # linear interpolation
     x_interp = x1 + (crossing - y1)*(x2-x1)/(y2-y1)
     
     return x_interp
 
-# define zero crossing
+
+# Function to calculate zero crossing
 def zero_crossing(x, y):
 
     # indices where sign changes
@@ -68,6 +60,7 @@ def zero_crossing(x, y):
 
     return x_zero
 
+# Function to calculate rise time
 def rise_time(x,y):
     maximum = max(y)
 
@@ -77,9 +70,8 @@ def rise_time(x,y):
     
     hi = lin_interp_x(x, y, h_index, 0.9*maximum)
     lo = lin_interp_x(x, y, l_index, 0.1*maximum)
-
     tr = hi - lo
-    
+
     return tr
 
 zcross = zero_crossing(x, cfd)
@@ -88,22 +80,23 @@ tr = rise_time(x,y)
 mpv = minimize_scalar(f).x
 
 
-# generate figures
+#---------------------------------------------------------------------------------------------------
+# Generate figures and table
+#---------------------------------------------------------------------------------------------------
 fig1 = go.Figure()
+fig2 = go.Figure()
 
+# formatting
 fig1.update_layout(
     title="CFD Simulation",
     # xaxis_title="",
     # yaxis_title="",
     # plot_bgcolor="",
     xaxis_range=(-5, 10), 
-    yaxis_range=(-0.7,0.7), 
+    yaxis_range=(-0.5,1), 
     width=1000, 
     height=600
 )
-
-# fig 2 with identical format
-fig2 = go.Figure()
 
 fig2.update_layout(
     title="CFD Simulation",
@@ -111,7 +104,7 @@ fig2.update_layout(
     # yaxis_title="",
     # plot_bgcolor="",
     xaxis_range=(-5, 10), 
-    yaxis_range=(-0.7,0.7), 
+    yaxis_range=(-0.5,1), 
     width=1000, 
     height=600
 )
@@ -125,14 +118,31 @@ fig1.add_trace(go.Scatter(x=[zcross, zcross], y=[-3, 3], mode="lines", name="zer
 
 fig2.add_trace(go.Scatter(x=x, y=cfd))
 
+# table for Sweep Graph
+table = go.Figure(data=[go.Table(
+    header=dict(values=['Trace', 'MPV', 'Rise Time', 'Zero Crossing'],
+                # line_color='darkslategray',
+                # fill_color='lightskyblue',
+                align='left'),
 
-# web app layout
+    cells=dict(values=[[1], [], [], []],
+            #    line_color='darkslategray',
+            #    fill_color='lightcyan',
+               align='left'))
+])
+
+table.update_layout(width=650, height=2000)
+
+#---------------------------------------------------------------------------------------------------
+# Web App Layout
+#---------------------------------------------------------------------------------------------------
 app = Dash(__name__)
 
 app.layout = html.Div([
     dcc.Store(id="active-graph", data="graph1"),
     dcc.Store(id="graph1-store", data=fig1),
     dcc.Store(id="graph2-store", data=fig2),
+    dcc.Store(id='table-data', data=[]),
 
     html.Div([
          
@@ -144,17 +154,17 @@ app.layout = html.Div([
             
             html.Div([
                 html.Div([
-                    html.H4("MPV:", className="slider-label"),
+                    html.H4("MPV:", className="display-label"),
                     html.Div(id="mpv", className="display"),
                 ]),
 
                 html.Div([
-                    html.H4("Rise Time:", className="slider-label"),
+                    html.H4("Rise Time:", className="display-label"),
                     html.Div(id="rise-time", className="display"),
                 ]),
 
                 html.Div([
-                    html.H4("Zero Crossing:", className="slider-label"),
+                    html.H4("Zero Crossing:", className="display-label"),
                     html.Div(id="zero-crossing-value", className="display"),
                 ]),
             ],
@@ -185,12 +195,12 @@ app.layout = html.Div([
         ),
 
         html.Div([
-            html.Label("loc"),
+            html.Label("Location"),
             dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
         ], id="locSlider", className="slider-container"),
 
         html.Div([
-            html.Label("scale"),
+            html.Label("Scale"),
             dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
         ], id="scaleSlider", className="slider-container"),
 
@@ -214,6 +224,11 @@ app.layout = html.Div([
             dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
         ], id="attSlider", className="slider-container"),
 
+        dcc.Graph(
+            id='sweep-table',
+            figure=table
+        ) 
+
     ],
     className="right-column"
     )
@@ -222,8 +237,11 @@ app.layout = html.Div([
 className="whole-container"
 )       
 
-
-
+#---------------------------------------------------------------------------------------------------
+# Function to update the Signal Components Graph
+# -> Update traces of graph with slider inputs.
+# -> Also displays MPV, Rise Time, and Zero Crossing values.
+#---------------------------------------------------------------------------------------------------
 @app.callback(
     Output("graph1-store", "data"),
     Output("zero-crossing-value", "children", allow_duplicate=True),
@@ -240,9 +258,7 @@ className="whole-container"
 )
 def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
     if activeGraph == "graph2":
-        
         return no_update, no_update, no_update, no_update
-    
     
     else: 
 
@@ -262,7 +278,11 @@ def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
         return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
     
 
-
+#---------------------------------------------------------------------------------------------------
+# Function to show the correct graph
+# -> Takes the figure data from respective stores.
+# -> Prevents multiple functions from having "cfd-plot" as output.
+#---------------------------------------------------------------------------------------------------
 @app.callback(
         Output("cfd-plot", "figure"),
         Input("active-graph", "data"),
@@ -277,12 +297,18 @@ def update_graph(activeGraph, fig1, fig2):
 
 
 
-
+#---------------------------------------------------------------------------------------------------
+# Function to update the Sweep Graph
+# -> If function triggered by "Add Trace" button, current position of moveable trace is saved.
+# -> Otherwise, update the moveable trace based on inputs.
+#---------------------------------------------------------------------------------------------------
 @app.callback(
     Output("graph2-store", "data"),
+    Output("sweep-table", "figure"),
     Output("zero-crossing-value", "children", allow_duplicate=True),
     Output("rise-time", "children", allow_duplicate=True),
     Output("mpv", "children", allow_duplicate=True),
+    Output('table-data', 'data'),
     Input("loc", "value"),
     Input("scale", "value"),
     Input("sat", "value"),
@@ -292,12 +318,15 @@ def update_graph(activeGraph, fig1, fig2):
     Input("active-graph", "data"),
     Input("add-trace", "n_clicks"),
     State("graph2-store", "data"),
+    State("zero-crossing-value", "children"),
+    State("rise-time", "children"),
+    State("mpv", "children"),
+    State('table-data', 'data'),
     prevent_initial_call=True,
 )
-def updateTrace2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2):
+def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2, zcross, tr, mpv, tableData):
     if activeGraph == "graph1":
-        
-        return no_update, no_update, no_update, no_update
+        return no_update, no_update, no_update, no_update, no_update, no_update
     
     
     else: 
@@ -306,11 +335,35 @@ def updateTrace2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2)
         f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
 
         if button_id == "add-trace":
+            # capture trace
             s = "trace %d"
             traceName = s % n_clicks
             new_trace = go.Scatter(x=x, y=cfd, name=traceName)
             fig2["data"].append(new_trace)
-            return fig2, no_update, no_update, no_update
+
+            # update table
+            # new_row = [n_clicks, mpv, tr, zcross]
+            new_row = {
+                "trace": n_clicks,
+                "mpv": mpv,
+                "tr": tr,
+                "zcross": zcross
+            }
+            tableData.append(new_row)
+            values = [
+                [row["trace"] for row in tableData],
+                [row["mpv"] for row in tableData],
+                [row["tr"] for row in tableData],
+                [row["zcross"] for row in tableData],
+            ]   
+            table = go.Figure(data=[go.Table(
+                header=dict(values=['Trace', 'MPV', 'Rise Time', 'Zero Crossing'],
+                            align='left'),
+                cells=dict(values=values,
+                        align='left'))
+            ])
+
+            return fig2, table, no_update, no_update, no_update, tableData
 
         else:
             zcross = zero_crossing(x, cfd)
@@ -320,23 +373,30 @@ def updateTrace2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2)
             patch = Patch()
             patch["data"][0]["y"] = cfd
             
-            return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
+            return patch, no_update, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}", no_update
 
 
-
+#---------------------------------------------------------------------------------------------------
+# Function to change graphs with the graph buttons
+#---------------------------------------------------------------------------------------------------
 @app.callback(
     Output("active-graph", "data"),
     Input("show-graph-1", "n_clicks"),
     Input("show-graph-2", "n_clicks")
 )
 def switch_graph(graph1Clicks, graph2Clicks):
-    if graph2Clicks > graph1Clicks:
+    button_id = ctx.triggered_id
+
+    if button_id == "show-graph-2":
         activeGraph = "graph2"
     else:
         activeGraph = "graph1"
 
     return activeGraph
 
+#---------------------------------------------------------------------------------------------------
+# Function to show/hide individual sliders
+#---------------------------------------------------------------------------------------------------
 @app.callback(
     Output("locSlider", "style"),
     Output("scaleSlider", "style"),

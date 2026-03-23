@@ -8,7 +8,7 @@ from dash import Dash, dcc, html, Input, Output, State, Patch, no_update, ctx
 # initial parameters
 loc = 0
 scale = 0.5
-sat = 0.6
+sat = 0.7
 ampl = 1
 delay = 1
 att = 0.2
@@ -87,27 +87,49 @@ fig1 = go.Figure()
 fig2 = go.Figure()
 
 # formatting
-fig1.update_layout(
+# fig1.update_layout(
+#     title="CFD Simulation",
+#     # xaxis_title="",
+#     # yaxis_title="",
+#     # plot_bgcolor="",
+#     xaxis_range=(-5, 10), 
+#     yaxis_range=(-0.5,1), 
+#     width=1000, 
+#     height=600,
+# )
+
+# fig2.update_layout(
+#     title="CFD Simulation",
+#     # xaxis_title="",
+#     # yaxis_title="",
+#     # plot_bgcolor="",
+#     xaxis_range=(-5, 10), 
+#     yaxis_range=(-0.5,1), 
+#     width=1000, 
+#     height=600,
+# )
+common_layout = dict(
+    showlegend=True,  # or always True for both
     title="CFD Simulation",
-    # xaxis_title="",
-    # yaxis_title="",
-    # plot_bgcolor="",
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
     width=1000, 
-    height=600
+    height=600,
+    autosize=False,
+    legend=dict(
+        x=1.02,    # slightly outside the figure
+        y=1,
+        xanchor='left',   # anchor relative to x
+        yanchor='top',
+        bgcolor='rgba(0,0,0,0)',  # optional: transparent
+        bordercolor='black',
+        borderwidth=1
+    ),
+    margin=dict(l=50, r=150, t=80, b=50)
 )
 
-fig2.update_layout(
-    title="CFD Simulation",
-    # xaxis_title="",
-    # yaxis_title="",
-    # plot_bgcolor="",
-    xaxis_range=(-5, 10), 
-    yaxis_range=(-0.5,1), 
-    width=1000, 
-    height=600
-)
+fig1.update_layout(**common_layout)
+fig2.update_layout(**common_layout)
 
 # add traces
 fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
@@ -120,7 +142,7 @@ fig2.add_trace(go.Scatter(x=x, y=cfd))
 
 # table for Sweep Graph
 table = go.Figure(data=[go.Table(
-    header=dict(values=['Trace', 'MPV', 'Rise Time', 'Zero Crossing'],
+    header=dict(values=['Trace', 'Zero Crossing', 'Rise Time', 'MPV'],
                 # line_color='darkslategray',
                 # fill_color='lightskyblue',
                 align='left'),
@@ -131,7 +153,11 @@ table = go.Figure(data=[go.Table(
                align='left'))
 ])
 
-table.update_layout(width=650, height=2000)
+table.update_layout(
+    width=650,
+    height=2000,
+    margin=dict(l=0, r=0, t=0, b=0),
+)
 
 #---------------------------------------------------------------------------------------------------
 # Web App Layout
@@ -147,15 +173,15 @@ app.layout = html.Div([
     html.Div([
          
         html.Div([
-            html.Button('Graph 1', id='show-graph-1', n_clicks=0),
-            html.Button('Graph 2', id='show-graph-2', n_clicks=0),
+            html.Button('Signal Components', id='show-graph-1', n_clicks=0),
+            html.Button('Sweep', id='show-graph-2', n_clicks=0),
 
             dcc.Graph(figure=fig1, id="cfd-plot", className="graph-container"),
             
             html.Div([
                 html.Div([
-                    html.H4("MPV:", className="display-label"),
-                    html.Div(id="mpv", className="display"),
+                    html.H4("Zero Crossing:", className="display-label"),
+                    html.Div(id="zero-crossing-value", className="display"),
                 ]),
 
                 html.Div([
@@ -164,14 +190,12 @@ app.layout = html.Div([
                 ]),
 
                 html.Div([
-                    html.H4("Zero Crossing:", className="display-label"),
-                    html.Div(id="zero-crossing-value", className="display"),
-                ]),
+                    html.H4("MPV:", className="display-label"),
+                    html.Div(id="mpv", className="display"),
+                ]), 
             ],
             className="display-container"
             ),
-
-            html.Button("Add Trace", id="add-trace", n_clicks=0)
         ],
         className="left-column"
         )
@@ -224,10 +248,10 @@ app.layout = html.Div([
             dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
         ], id="attSlider", className="slider-container"),
 
+        html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
+
         dcc.Graph(
-            id='sweep-table',
-            figure=table
-        ) 
+            id='sweep-table', figure=table, className="table") 
 
     ],
     className="right-column"
@@ -285,15 +309,17 @@ def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
 #---------------------------------------------------------------------------------------------------
 @app.callback(
         Output("cfd-plot", "figure"),
+        Output("sweep-table", "style"),
+        Output("add-trace", "style"),
         Input("active-graph", "data"),
         Input("graph1-store", "data"),
         Input("graph2-store", "data"),
 )
 def update_graph(activeGraph, fig1, fig2):
     if activeGraph == "graph2":
-        return fig2
+        return fig2, {'display': 'block'}, {'display': 'block'}
     else:
-        return fig1
+        return fig1, {'display': 'none'}, {'display': 'none'}
 
 
 
@@ -345,23 +371,29 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
             # new_row = [n_clicks, mpv, tr, zcross]
             new_row = {
                 "trace": n_clicks,
-                "mpv": mpv,
+                "zcross": zcross,
                 "tr": tr,
-                "zcross": zcross
+                "mpv": mpv,
             }
             tableData.append(new_row)
             values = [
                 [row["trace"] for row in tableData],
-                [row["mpv"] for row in tableData],
-                [row["tr"] for row in tableData],
                 [row["zcross"] for row in tableData],
+                [row["tr"] for row in tableData],
+                [row["mpv"] for row in tableData],
             ]   
             table = go.Figure(data=[go.Table(
-                header=dict(values=['Trace', 'MPV', 'Rise Time', 'Zero Crossing'],
+                header=dict(values=['Trace', 'Zero Crossing', 'Rise Time', 'MPV'],
                             align='left'),
                 cells=dict(values=values,
                         align='left'))
             ])
+
+            table.update_layout(
+                width=650,
+                height=2000,
+                margin=dict(l=0, r=0, t=0, b=0),
+            )
 
             return fig2, table, no_update, no_update, no_update, tableData
 

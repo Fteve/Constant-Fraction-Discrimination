@@ -18,6 +18,13 @@ This script will:
 -   Install missing dependencies using `pip`
 -   Launch the Dash web application
 
+Once the web app is running, you should see something like this:
+
+```bash
+Dash is running on http://127.0.0.1:8050/
+```
+Use ctrl+click on the url to open the app in a new browser tab.
+
 * * * * *
 
 Web App

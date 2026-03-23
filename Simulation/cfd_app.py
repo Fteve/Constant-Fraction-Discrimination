@@ -87,29 +87,8 @@ fig1 = go.Figure()
 fig2 = go.Figure()
 
 # formatting
-# fig1.update_layout(
-#     title="CFD Simulation",
-#     # xaxis_title="",
-#     # yaxis_title="",
-#     # plot_bgcolor="",
-#     xaxis_range=(-5, 10), 
-#     yaxis_range=(-0.5,1), 
-#     width=1000, 
-#     height=600,
-# )
-
-# fig2.update_layout(
-#     title="CFD Simulation",
-#     # xaxis_title="",
-#     # yaxis_title="",
-#     # plot_bgcolor="",
-#     xaxis_range=(-5, 10), 
-#     yaxis_range=(-0.5,1), 
-#     width=1000, 
-#     height=600,
-# )
-common_layout = dict(
-    showlegend=True,  # or always True for both
+fig1.update_layout(
+showlegend=True,  # or always True for both
     title="CFD Simulation",
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
@@ -128,8 +107,48 @@ common_layout = dict(
     margin=dict(l=50, r=150, t=80, b=50)
 )
 
-fig1.update_layout(**common_layout)
-fig2.update_layout(**common_layout)
+fig2.update_layout(
+showlegend=True,  # or always True for both
+    title="CFD Simulation",
+    xaxis_range=(-5, 10), 
+    yaxis_range=(-0.5,1), 
+    width=1000, 
+    height=600,
+    autosize=False,
+    legend=dict(
+        x=1.02,    # slightly outside the figure
+        y=1,
+        xanchor='left',   # anchor relative to x
+        yanchor='top',
+        bgcolor='rgba(0,0,0,0)',  # optional: transparent
+        bordercolor='black',
+        borderwidth=1
+    ),
+    margin=dict(l=50, r=150, t=80, b=50)
+)
+
+# common_layout = dict(
+#     showlegend=True,  # or always True for both
+#     title="CFD Simulation",
+#     xaxis_range=(-5, 10), 
+#     yaxis_range=(-0.5,1), 
+#     width=1000, 
+#     height=600,
+#     autosize=False,
+#     legend=dict(
+#         x=1.02,    # slightly outside the figure
+#         y=1,
+#         xanchor='left',   # anchor relative to x
+#         yanchor='top',
+#         bgcolor='rgba(0,0,0,0)',  # optional: transparent
+#         bordercolor='black',
+#         borderwidth=1
+#     ),
+#     margin=dict(l=50, r=150, t=80, b=50)
+# )
+# 
+# fig1.update_layout(**common_layout)
+# fig2.update_layout(**common_layout)
 
 # add traces
 fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
@@ -168,7 +187,8 @@ app.layout = html.Div([
     dcc.Store(id="active-graph", data="graph1"),
     dcc.Store(id="graph1-store", data=fig1),
     dcc.Store(id="graph2-store", data=fig2),
-    dcc.Store(id='table-data', data=[]),
+    dcc.Store(id="table-data", data=[]),
+    dcc.Store(id="visibility", data=[[],[]]),
 
     html.Div([
          
@@ -261,6 +281,55 @@ app.layout = html.Div([
 className="whole-container"
 )       
 
+
+#---------------------------------------------------------------------------------------------------
+# Function to show the correct graph
+# -> Takes the figure data from respective stores.
+# -> Prevents multiple functions from having "cfd-plot" as output.
+#---------------------------------------------------------------------------------------------------
+@app.callback(
+        Output("cfd-plot", "figure"),
+        Output("sweep-table", "style"),
+        Output("add-trace", "style"),
+        Input("active-graph", "data"),
+        Input("graph1-store", "data"),
+        Input("graph2-store", "data"),
+        Input("visibility", "data"),
+)
+def update_graph(activeGraph, fig1, fig2, visibility):
+    if activeGraph == "graph2":
+        if visibility[1]:
+            for i, trace in enumerate(fig2["data"]):
+                trace["visible"] = visibility[1][i]
+
+        return fig2, {'display': 'block'}, {'display': 'block'}
+    else:   
+        if visibility[0]:
+            for i, trace in enumerate(fig1["data"]):
+                trace["visible"] = visibility[0][i]
+
+        return fig1, {'display': 'none'}, {'display': 'none'}
+    
+
+#---------------------------------------------------------------------------------------------------
+# Function to change graphs with the graph buttons
+#---------------------------------------------------------------------------------------------------
+@app.callback(
+    Output("active-graph", "data"),
+    Input("show-graph-1", "n_clicks"),
+    Input("show-graph-2", "n_clicks")
+)
+def switch_graph(graph1Clicks, graph2Clicks):
+    button_id = ctx.triggered_id
+
+    if button_id == "show-graph-2":
+        activeGraph = "graph2"
+    else:
+        activeGraph = "graph1"
+
+    return activeGraph
+
+
 #---------------------------------------------------------------------------------------------------
 # Function to update the Signal Components Graph
 # -> Update traces of graph with slider inputs.
@@ -301,27 +370,6 @@ def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
 
         return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
     
-
-#---------------------------------------------------------------------------------------------------
-# Function to show the correct graph
-# -> Takes the figure data from respective stores.
-# -> Prevents multiple functions from having "cfd-plot" as output.
-#---------------------------------------------------------------------------------------------------
-@app.callback(
-        Output("cfd-plot", "figure"),
-        Output("sweep-table", "style"),
-        Output("add-trace", "style"),
-        Input("active-graph", "data"),
-        Input("graph1-store", "data"),
-        Input("graph2-store", "data"),
-)
-def update_graph(activeGraph, fig1, fig2):
-    if activeGraph == "graph2":
-        return fig2, {'display': 'block'}, {'display': 'block'}
-    else:
-        return fig1, {'display': 'none'}, {'display': 'none'}
-
-
 
 #---------------------------------------------------------------------------------------------------
 # Function to update the Sweep Graph
@@ -408,23 +456,6 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
             return patch, no_update, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}", no_update
 
 
-#---------------------------------------------------------------------------------------------------
-# Function to change graphs with the graph buttons
-#---------------------------------------------------------------------------------------------------
-@app.callback(
-    Output("active-graph", "data"),
-    Input("show-graph-1", "n_clicks"),
-    Input("show-graph-2", "n_clicks")
-)
-def switch_graph(graph1Clicks, graph2Clicks):
-    button_id = ctx.triggered_id
-
-    if button_id == "show-graph-2":
-        activeGraph = "graph2"
-    else:
-        activeGraph = "graph1"
-
-    return activeGraph
 
 #---------------------------------------------------------------------------------------------------
 # Function to show/hide individual sliders
@@ -447,6 +478,32 @@ def toggling(selected):
     att_style = {"display": "block"} if "att" in selected else {"display": "none"}
 
     return loc_style, scale_style, sat_style, ampl_style, delay_style, att_style
+
+@app.callback(
+    Output("visibility", "data"),
+    Input("cfd-plot", "restyleData"),
+    Input("add-trace", "n_clicks"),
+    State("active-graph", "data"),
+    State("cfd-plot", "figure"),
+    State("visibility", "data"),
+)
+def store_visibility(restyleData, n_clicks, activeGraph, current_fig, visibility):
+    button_id = ctx.triggered_id
+
+    vis = []
+    for trace in current_fig["data"]:
+        traceVis = trace.get("visible", True)
+        vis.append(traceVis)
+
+    if activeGraph == "graph2":
+        if button_id == "add-trace":
+            vis.append("True")
+        visibility[1] = vis
+    else:
+        visibility[0] = vis
+        
+    return visibility
+
 
 if __name__ == "__main__":
     app.run(debug=True)

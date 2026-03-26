@@ -97,7 +97,7 @@ showlegend=True,  # or always True for both
     title="CFD Simulation",
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
-    width=1000, 
+    width=1050, 
     height=600,
     autosize=False,
     legend=dict(
@@ -117,7 +117,7 @@ showlegend=True,  # or always True for both
     title="CFD Simulation",
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
-    width=1000, 
+    width=1050, 
     height=600,
     autosize=False,
     legend=dict(
@@ -176,8 +176,12 @@ app.layout = html.Div([
     html.Div([
          
         html.Div([
-            html.Button('Signal Components', id='show-graph-1', n_clicks=0),
-            html.Button('Sweep', id='show-graph-2', n_clicks=0),
+            html.Div([
+                html.Button('Mode: Signal Components', id='show-graph-1', n_clicks=0, className="mode-button"),
+                # html.Button('Sweep', id='show-graph-2', n_clicks=0, className="mode-button"),
+            ],
+            className="mode-button-container"),
+            
 
             dcc.Graph(figure=fig1, id="cfd-plot", className="graph-container"),
             
@@ -257,9 +261,12 @@ app.layout = html.Div([
             dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
         ], id="nzSlider", className="slider-container"),
 
-        html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
+        html.Div([
+            html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
 
-        html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),
+            html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),
+        ],
+        className="trace-buttons-container"),
 
         dcc.Graph(
             id='sweep-table', figure=table, className="table") 
@@ -308,18 +315,25 @@ def update_graph(activeGraph, fig1, fig2, visibility):
 #---------------------------------------------------------------------------------------------------
 @app.callback(
     Output("active-graph", "data"),
+    Output("show-graph-1", "children"),
     Input("show-graph-1", "n_clicks"),
-    Input("show-graph-2", "n_clicks")
+    State("active-graph", "data"),
+    # Input("show-graph-2", "n_clicks")
 )
-def switch_graph(graph1Clicks, graph2Clicks):
-    button_id = ctx.triggered_id
+def switch_graph(graph1Clicks, activeGraph):
+    # button_id = ctx.triggered_id
 
-    if button_id == "show-graph-2":
-        activeGraph = "graph2"
+    # if button_id == "show-graph-2":
+    #     activeGraph = "graph2"
+    # else:
+    #     activeGraph = "graph1"
+
+    if activeGraph == "graph2":
+        return "graph1", "Mode: Signal Components"
     else:
-        activeGraph = "graph1"
+        return "graph2", "Mode: Output Trace"
 
-    return activeGraph
+    # return activeGraph
 
 
 #---------------------------------------------------------------------------------------------------

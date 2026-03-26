@@ -12,13 +12,19 @@ sat = 0.7
 ampl = 1
 delay = 1
 att = 0.2
+sigma = 0.01
+nzOn = 0
 
 x = np.linspace(-5, 20, 1000)
 
 # Function to calculate component signals
-def signalCalcs(x, loc, scale, sat, ampl, delay, att):
+def signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn):
     f = lambda x: -ampl * landau.pdf(x, loc=loc, scale=scale)
     y = -f(x)
+
+    if nzOn:
+        noise = np.random.normal(loc=0, scale=sigma, size=len(x))
+        y = y + noise
 
     for i in range(len(x)):
             if (y[i] > sat):
@@ -30,7 +36,7 @@ def signalCalcs(x, loc, scale, sat, ampl, delay, att):
 
     return f, y, delsig, attsig, cfd
 
-f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
+f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
 
 # Function to calculate interpolation
 # Used in zero crossing and rise time calculations
@@ -78,7 +84,6 @@ zcross = zero_crossing(x, cfd)
 tr = rise_time(x,y)
 # Looks for mpv including non-sampled points
 mpv = minimize_scalar(f).x
-
 
 #---------------------------------------------------------------------------------------------------
 # Generate figures and table
@@ -166,6 +171,7 @@ app.layout = html.Div([
     dcc.Store(id="graph2-store", data=fig2),
     dcc.Store(id="table-data", data=[]),
     dcc.Store(id="visibility", data=[[],[]]),
+    dcc.Store(id="noise-toggle", data=nzOn),
 
     html.Div([
          
@@ -209,6 +215,7 @@ app.layout = html.Div([
                 {"label": "Amplitude", "value": "ampl"},
                 {"label": "Delay", "value": "delay"},
                 {"label": "Attenuation", "value": "att"},
+                {"label": "Noise", "value": "nz"}
                 
             ],
             value=["ampl", "delay", "att"],
@@ -245,7 +252,14 @@ app.layout = html.Div([
             dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
         ], id="attSlider", className="slider-container"),
 
+        html.Div([
+            html.Label("Noise"),
+            dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
+        ], id="nzSlider", className="slider-container"),
+
         html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
+
+        html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),
 
         dcc.Graph(
             id='sweep-table', figure=table, className="table") 
@@ -268,6 +282,7 @@ className="whole-container"
         Output("cfd-plot", "figure"),
         Output("sweep-table", "style"),
         Output("add-trace", "style"),
+        Output("clear", "style"),
         Input("active-graph", "data"),
         Input("graph1-store", "data"),
         Input("graph2-store", "data"),
@@ -279,13 +294,13 @@ def update_graph(activeGraph, fig1, fig2, visibility):
             for i, trace in enumerate(fig2["data"]):
                 trace["visible"] = visibility[1][i]
 
-        return fig2, {'display': 'block'}, {'display': 'block'}
+        return fig2, {'display': 'block'}, {'display': 'block'}, {'display': 'block'}
     else:   
         if visibility[0]:
             for i, trace in enumerate(fig1["data"]):
                 trace["visible"] = visibility[0][i]
 
-        return fig1, {'display': 'none'}, {'display': 'none'}
+        return fig1, {'display': 'none'}, {'display': 'none'}, {'display': 'none'}
     
 
 #---------------------------------------------------------------------------------------------------
@@ -323,17 +338,19 @@ def switch_graph(graph1Clicks, graph2Clicks):
     Input("ampl", "value"),
     Input("delay", "value"),
     Input("att", "value"),
+    Input("nz", "value"),
     Input("active-graph", "data"),
+    Input("noise-toggle", "data"),
     prevent_initial_call=True,
 )
-def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
+def update_graph1(loc, scale, sat, ampl, delay, att, sigma, activeGraph, nzOn):
     if activeGraph == "graph2":
         return no_update, no_update, no_update, no_update
     
     else: 
 
-        f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
-
+        f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
+            
         zcross = zero_crossing(x, cfd)
         tr = rise_time(x,y)
         mpv = minimize_scalar(f).x
@@ -366,16 +383,20 @@ def update_graph1(loc, scale, sat, ampl, delay, att, activeGraph):
     Input("ampl", "value"),
     Input("delay", "value"),
     Input("att", "value"),
+    Input("nz", "value"),
     Input("active-graph", "data"),
     Input("add-trace", "n_clicks"),
+    Input("clear", "n_clicks"),
+    Input("noise-toggle", "data"),
     State("graph2-store", "data"),
     State("zero-crossing-value", "children"),
     State("rise-time", "children"),
     State("mpv", "children"),
     State('table-data', 'data'),
+    
     prevent_initial_call=True,
 )
-def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2, zcross, tr, mpv, tableData):
+def updateGraph2(loc, scale, sat, ampl, delay, att, sigma, activeGraph, n_clicks, n_clicksC, nzOn, fig2, zcross, tr, mpv, tableData,):
     if activeGraph == "graph1":
         return no_update, no_update, no_update, no_update, no_update, no_update
     
@@ -383,27 +404,37 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
     else: 
         button_id = ctx.triggered_id
 
-        f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att)
+        f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
 
-        if button_id == "add-trace":
-            # capture trace
-            s = "trace %d"
-            traceName = s % n_clicks
-            new_trace = go.Scatter(x=x, y=cfd, name=traceName)
-            fig2["data"].append(new_trace)
+        if button_id == "add-trace" or button_id == "clear":
 
-            # update table
-            # new_row = [n_clicks, mpv, tr, zcross]
-            new_row = {
-                "trace": n_clicks,
-                "ampl": ampl,
-                "delay": delay,
-                "att": att, 
-                "zcross": zcross,
-                "tr": tr,
-                "mpv": mpv,
-            }
-            tableData.append(new_row)
+            if button_id == "add-trace":
+                # capture trace
+                s = "trace %d"
+                traceName = s % n_clicks
+                new_trace = go.Scatter(x=x, y=cfd, name=traceName)
+                fig2["data"].append(new_trace)
+
+                # update table
+                # new_row = [n_clicks, mpv, tr, zcross]
+                new_row = {
+                    "trace": n_clicks,
+                    "ampl": ampl,
+                    "delay": delay,
+                    "att": att, 
+                    "zcross": zcross,
+                    "tr": tr,
+                    "mpv": mpv,
+                }
+
+                tableData.append(new_row)
+     
+            else:
+                fig2["data"] = fig2["data"][:1]
+                tableData = []
+                print("here!")
+
+
             values = [
                 [row["trace"] for row in tableData],
                 [row["ampl"] for row in tableData],
@@ -412,7 +443,8 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
                 [row["zcross"] for row in tableData],
                 [row["tr"] for row in tableData],
                 [row["mpv"] for row in tableData],
-            ]   
+            ] 
+            
             table = go.Figure(data=[go.Table(
                 header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'MPV'],
                             align='left'),
@@ -450,7 +482,10 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, activeGraph, n_clicks, fig2,
     Output("amplSlider", "style"),
     Output("delaySlider", "style"),
     Output("attSlider", "style"), 
+    Output("nzSlider", "style"),
+    Output("noise-toggle", "data"),
     Input("slider-toggle", "value"),
+    
 )
 def toggling(selected):
     loc_style = {"display": "block"} if "loc" in selected else {"display": "none"}
@@ -459,18 +494,28 @@ def toggling(selected):
     ampl_style = {"display": "block"} if "ampl" in selected else {"display": "none"}
     delay_style = {"display": "block"} if "delay" in selected else {"display": "none"}
     att_style = {"display": "block"} if "att" in selected else {"display": "none"}
+    
+    if "nz" in selected:
+        nz_style = {"display": "block"}
+        nzOn = 1
+    else:
+        nz_style = {"display": "none"}
+        nzOn = 0
 
-    return loc_style, scale_style, sat_style, ampl_style, delay_style, att_style
+
+
+    return loc_style, scale_style, sat_style, ampl_style, delay_style, att_style, nz_style, nzOn
 
 @app.callback(
     Output("visibility", "data"),
     Input("cfd-plot", "restyleData"),
     Input("add-trace", "n_clicks"),
+    Input("clear", "n_clicks"),
     State("active-graph", "data"),
     State("cfd-plot", "figure"),
     State("visibility", "data"),
 )
-def store_visibility(restyleData, n_clicks, activeGraph, current_fig, visibility):
+def store_visibility(restyleData, n_clicks, n_clicksC, activeGraph, current_fig, visibility):
     button_id = ctx.triggered_id
 
     vis = []
@@ -481,6 +526,8 @@ def store_visibility(restyleData, n_clicks, activeGraph, current_fig, visibility
     if activeGraph == "graph2":
         if button_id == "add-trace":
             vis.append("True")
+        if button_id == "clear":
+            vis = ["True"]
         visibility[1] = vis
     else:
         visibility[0] = vis

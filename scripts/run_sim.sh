@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stops the script if any command fails
-set -e
+# set -e
 
 echo "Activating virtual environment...
 "
@@ -21,3 +21,5 @@ echo "Running simulation web app...
 "
 python cfd_app.py
 
+cd ..
+read -p "Press enter to exit..."

@@ -210,56 +210,113 @@ app.layout = html.Div([
 
 
     html.Div([
-        dcc.Checklist(
-            id="slider-toggle",
-            options=[
-                {"label": "Location", "value": "loc"},
-                {"label": "Scale", "value": "scale"},
-                {"label": "Saturation", "value": "sat"},
-                {"label": "Amplitude", "value": "ampl"},
-                {"label": "Delay", "value": "delay"},
-                {"label": "Attenuation", "value": "att"},
-                {"label": "Noise", "value": "nz"}
-                
-            ],
-            value=["ampl", "delay", "att"],
-            className="checklist"
+
+        dcc.Tabs(
+            id="tabs",
+            value="tab-1",  # default tab
+            children=[
+                dcc.Tab(label="Landau Parameters", value="tab-1", children=[
+                    html.Div([
+                        html.Label("Location"),
+                        dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
+                    ], id="locSlider", className="slider-container"),
+
+                    html.Div([
+                        html.Label("Scale"),
+                        dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
+                    ], id="scaleSlider", className="slider-container"),  
+                ]),
+
+                dcc.Tab(label="Signals", value="tab-2", children=[
+                    html.Div([
+                        html.Label("Amplitude"),
+                        dcc.Slider(id="ampl", min=0.1, max=3, step=0.02, value=ampl, updatemode="drag"),
+                    ], id="amplSlider", className="slider-container"),
+
+                    html.Div([
+                        html.Label("Delay"),
+                        dcc.Slider(id="delay", min=0, max=3.5, step=0.05, value=delay, updatemode="drag"),
+                    ], id="delaySlider", className="slider-container"),
+
+                    html.Div([
+                        html.Label("Attenuation"),
+                        dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
+                    ], id="attSlider", className="slider-container"),
+                ]),
+
+                dcc.Tab(label="Noise & Saturation", value="tab-3", children=[
+                    dcc.Checklist(
+                        id="slider-toggle",
+                        options=[
+                            {"label": "Noise", "value": "nz"}
+                        ],
+                        value=[],
+                        className="checklist"
+                    ),
+                    
+                    html.Div([
+                        html.Label("Noise"),
+                        dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
+                    ], id="nzSlider", className="slider-container"),
+
+                    html.Div([
+                        html.Label("Saturation"),
+                        dcc.Slider(id="sat", min=0.3, max=1, step=0.01, value=sat, updatemode="drag"),
+                    ], id="satSlider", className="slider-container"),
+                ]),
+            ]
         ),
 
-        html.Div([
-            html.Label("Location"),
-            dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
-        ], id="locSlider", className="slider-container"),
+        # dcc.Checklist(
+        #     id="slider-toggle",
+        #     options=[
+        #         {"label": "Location", "value": "loc"},
+        #         {"label": "Scale", "value": "scale"},
+        #         {"label": "Saturation", "value": "sat"},
+        #         {"label": "Amplitude", "value": "ampl"},
+        #         {"label": "Delay", "value": "delay"},
+        #         {"label": "Attenuation", "value": "att"},
+        #         {"label": "Noise", "value": "nz"}
+                
+        #     ],
+        #     value=["ampl", "delay", "att"],
+        #     className="checklist"
+        # ),
 
-        html.Div([
-            html.Label("Scale"),
-            dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
-        ], id="scaleSlider", className="slider-container"),
+        # html.Div([
+        #     html.Label("Location"),
+        #     dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
+        # ], id="locSlider", className="slider-container"),
 
-        html.Div([
-            html.Label("Saturation"),
-            dcc.Slider(id="sat", min=0.3, max=1, step=0.01, value=sat, updatemode="drag"),
-        ], id="satSlider", className="slider-container"),
+        # html.Div([
+        #     html.Label("Scale"),
+        #     dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
+        # ], id="scaleSlider", className="slider-container"),
 
-        html.Div([
-            html.Label("Amplitude"),
-            dcc.Slider(id="ampl", min=0.1, max=3, step=0.02, value=ampl, updatemode="drag"),
-        ], id="amplSlider", className="slider-container"),
+        # html.Div([
+        #     html.Label("Saturation"),
+        #     dcc.Slider(id="sat", min=0.3, max=1, step=0.01, value=sat, updatemode="drag"),
+        # ], id="satSlider", className="slider-container"),
 
-        html.Div([
-            html.Label("Delay"),
-            dcc.Slider(id="delay", min=0, max=3.5, step=0.05, value=delay, updatemode="drag"),
-        ], id="delaySlider", className="slider-container"),
+        # html.Div([
+        #     html.Label("Amplitude"),
+        #     dcc.Slider(id="ampl", min=0.1, max=3, step=0.02, value=ampl, updatemode="drag"),
+        # ], id="amplSlider", className="slider-container"),
 
-        html.Div([
-            html.Label("Attenuation"),
-            dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
-        ], id="attSlider", className="slider-container"),
+        # html.Div([
+        #     html.Label("Delay"),
+        #     dcc.Slider(id="delay", min=0, max=3.5, step=0.05, value=delay, updatemode="drag"),
+        # ], id="delaySlider", className="slider-container"),
 
-        html.Div([
-            html.Label("Noise"),
-            dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
-        ], id="nzSlider", className="slider-container"),
+        # html.Div([
+        #     html.Label("Attenuation"),
+        #     dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
+        # ], id="attSlider", className="slider-container"),
+
+        # html.Div([
+        #     html.Label("Noise"),
+        #     dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
+        # ], id="nzSlider", className="slider-container"),
 
         html.Div([
             html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
@@ -490,35 +547,36 @@ def updateGraph2(loc, scale, sat, ampl, delay, att, sigma, activeGraph, n_clicks
 # Function to show/hide individual sliders
 #---------------------------------------------------------------------------------------------------
 @app.callback(
-    Output("locSlider", "style"),
-    Output("scaleSlider", "style"),
-    Output("satSlider", "style"),
-    Output("amplSlider", "style"),
-    Output("delaySlider", "style"),
-    Output("attSlider", "style"), 
-    Output("nzSlider", "style"),
+    # Output("locSlider", "style"),
+    # Output("scaleSlider", "style"),
+    # Output("satSlider", "style"),
+    # Output("amplSlider", "style"),
+    # Output("delaySlider", "style"),
+    # Output("attSlider", "style"), 
+    # Output("nzSlider", "style"),
     Output("noise-toggle", "data"),
     Input("slider-toggle", "value"),
     
 )
 def toggling(selected):
-    loc_style = {"display": "block"} if "loc" in selected else {"display": "none"}
-    scale_style = {"display": "block"} if "scale" in selected else {"display": "none"}
-    sat_style = {"display": "block"} if "sat" in selected else {"display": "none"}
-    ampl_style = {"display": "block"} if "ampl" in selected else {"display": "none"}
-    delay_style = {"display": "block"} if "delay" in selected else {"display": "none"}
-    att_style = {"display": "block"} if "att" in selected else {"display": "none"}
+    # loc_style = {"display": "block"} if "loc" in selected else {"display": "none"}
+    # scale_style = {"display": "block"} if "scale" in selected else {"display": "none"}
+    # sat_style = {"display": "block"} if "sat" in selected else {"display": "none"}
+    # ampl_style = {"display": "block"} if "ampl" in selected else {"display": "none"}
+    # delay_style = {"display": "block"} if "delay" in selected else {"display": "none"}
+    # att_style = {"display": "block"} if "att" in selected else {"display": "none"}
     
     if "nz" in selected:
-        nz_style = {"display": "block"}
+        # nz_style = {"display": "block"}
         nzOn = 1
     else:
-        nz_style = {"display": "none"}
+        # nz_style = {"display": "none"}
         nzOn = 0
 
 
 
-    return loc_style, scale_style, sat_style, ampl_style, delay_style, att_style, nz_style, nzOn
+    # return loc_style, scale_style, sat_style, ampl_style, delay_style, att_style, nz_style, nzOn
+    return nzOn
 
 #---------------------------------------------------------------------------------------------------
 # Function to maintain visibility of specific traces

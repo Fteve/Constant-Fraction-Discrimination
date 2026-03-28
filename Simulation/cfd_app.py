@@ -93,7 +93,7 @@ fig2 = go.Figure()
 
 # formatting
 fig1.update_layout(
-showlegend=True,  # or always True for both
+    showlegend=True,  # or always True for both
     title="CFD Simulation",
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
@@ -101,7 +101,7 @@ showlegend=True,  # or always True for both
     height=600,
     autosize=False,
     legend=dict(
-        x=1.02,    # slightly outside the figure
+        x=1.01,    # slightly outside the figure
         y=1,
         xanchor='left',   # anchor relative to x
         yanchor='top',
@@ -113,7 +113,7 @@ showlegend=True,  # or always True for both
 )
 
 fig2.update_layout(
-showlegend=True,  # or always True for both
+    showlegend=True,  # or always True for both
     title="CFD Simulation",
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
@@ -121,7 +121,7 @@ showlegend=True,  # or always True for both
     height=600,
     autosize=False,
     legend=dict(
-        x=1.02,    # slightly outside the figure
+        x=1.01,    # slightly outside the figure
         y=1,
         xanchor='left',   # anchor relative to x
         yanchor='top',
@@ -331,7 +331,7 @@ def switch_graph(graph1Clicks, activeGraph):
     if activeGraph == "graph2":
         return "graph1", "Mode: Signal Components"
     else:
-        return "graph2", "Mode: Output Trace"
+        return "graph2", "Mode: CFD Output Trace"
 
     # return activeGraph
 
@@ -520,6 +520,9 @@ def toggling(selected):
 
     return loc_style, scale_style, sat_style, ampl_style, delay_style, att_style, nz_style, nzOn
 
+#---------------------------------------------------------------------------------------------------
+# Function to maintain visibility of specific traces
+#---------------------------------------------------------------------------------------------------
 @app.callback(
     Output("visibility", "data"),
     Input("cfd-plot", "restyleData"),

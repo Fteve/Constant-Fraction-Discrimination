@@ -90,7 +90,9 @@ def register_callbacks(app, x):
             patch["data"][1]["y"] = delsig
             patch["data"][2]["y"] = attsig
             patch["data"][3]["y"] = cfd
-            patch["data"][4]["x"] = [zcross,zcross]
+            patch["data"][4]["x"] = [zcross]
+            patch["data"][5]["y"] = [arm,arm]
+            # patch["data"][4]["x"] = [zcross,zcross]
 
             return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
         
@@ -163,7 +165,6 @@ def register_callbacks(app, x):
                 else:
                     fig2["data"] = fig2["data"][:1]
                     tableData = []
-                    print("here!")
 
 
                 values = [
@@ -197,13 +198,12 @@ def register_callbacks(app, x):
                     zcross = "None"
                 else:
                     zcross = f"{zcross:.3f}"
-                    
+
                 tr = rise_time(x,y)
                 mpv = minimize_scalar(f).x
 
                 patch = Patch()
                 patch["data"][0]["y"] = cfd
-                print("zcross: ", zcross)
                 return patch, no_update, zcross, f"{tr:.3f}", f"{mpv:.3f}", no_update
 
 

@@ -80,7 +80,9 @@ fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
 fig1.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
 fig1.add_trace(go.Scatter(x=x, y=attsig, name="attenuated"))
 fig1.add_trace(go.Scatter(x=x, y=cfd, name="CFD"))
-fig1.add_trace(go.Scatter(x=[zcross, zcross], y=[-3, 3], mode="lines", name="zero crossing", line=dict(dash="dash")))
+fig1.add_trace(go.Scatter(x=[zcross], y=[0], name="zero crossing", mode="markers"))
+fig1.add_trace(go.Scatter(x=[-5,11], y=[arm,arm], mode="lines", name="arming thrs", line=dict(dash="dash")))
+# fig1.add_trace(go.Scatter(x=[zcross, zcross], y=[-3, 3], mode="lines", name="zero crossing", line=dict(dash="dash")))
 
 fig2.add_trace(go.Scatter(x=x, y=cfd))
 

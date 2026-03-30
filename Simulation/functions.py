@@ -42,10 +42,7 @@ def zero_crossing(x, y, cfd, arm):
 
     if len(sign_change) == 0 or len(armed) == 0:
         return None  # no zero crossing
-    # elif len(sign_change) == 2:
-    #     i = sign_change[1]
     else:
-        # i = sign_change[0]
         # first index of sign_change after output is armed
         j = np.argmax(sign_change > armed[0]) # returns an index of indices
         i = sign_change[j] # returns an index

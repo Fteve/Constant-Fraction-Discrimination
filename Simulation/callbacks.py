@@ -39,10 +39,9 @@ def register_callbacks(app, x):
     #---------------------------------------------------------------------------------------------------
     @app.callback(
         Output("active-graph", "data"),
-        Output("show-graph-1", "children"),
-        Input("show-graph-1", "n_clicks"),
+        Output("show-graph", "children"),
+        Input("show-graph", "n_clicks"),
         State("active-graph", "data"),
-        # Input("show-graph-2", "n_clicks")
     )
     def switch_graph(graph1Clicks, activeGraph):
         if activeGraph == "graph2":
@@ -92,7 +91,6 @@ def register_callbacks(app, x):
             patch["data"][3]["y"] = cfd
             patch["data"][4]["x"] = [zcross]
             patch["data"][5]["y"] = [arm,arm]
-            # patch["data"][4]["x"] = [zcross,zcross]
 
             return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
         

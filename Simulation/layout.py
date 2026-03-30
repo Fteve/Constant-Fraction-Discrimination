@@ -10,11 +10,9 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm
         dcc.Store(id="noise-toggle", data=nzOn),
 
         html.Div([
-            
             html.Div([
                 html.Div([
-                    html.Button('Mode: Signal Components', id='show-graph-1', n_clicks=0, className="mode-button"),
-                    # html.Button('Sweep', id='show-graph-2', n_clicks=0, className="mode-button"),
+                    html.Button('Mode: Signal Components', id='show-graph', n_clicks=0, className="mode-button"),
                 ],
                 className="mode-button-container"),
                 
@@ -49,7 +47,7 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm
 
             dcc.Tabs(
                 id="tabs",
-                value="tab-1",  # default tab
+                value="tab-1",
                 children=[
                     dcc.Tab(label="Signals", value="tab-1", children=[
                         html.Div([

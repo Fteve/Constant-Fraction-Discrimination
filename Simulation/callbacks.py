@@ -81,6 +81,11 @@ def register_callbacks(app, x):
             f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
                 
             zcross = zero_crossing(x, y, cfd, arm)
+            if zcross is None:
+                    zcross = "None"
+            else:
+                zcross = f"{zcross:.3f}"
+
             tr = rise_time(x,y)
             mpv = minimize_scalar(f).x
 
@@ -92,7 +97,7 @@ def register_callbacks(app, x):
             patch["data"][4]["x"] = [zcross]
             patch["data"][5]["y"] = [arm,arm]
 
-            return patch, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}"
+            return patch, zcross, f"{tr:.3f}", f"{mpv:.3f}"
         
 
     #---------------------------------------------------------------------------------------------------

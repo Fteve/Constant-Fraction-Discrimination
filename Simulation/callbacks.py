@@ -68,11 +68,12 @@ def register_callbacks(app, x):
         Input("delay", "value"),
         Input("att", "value"),
         Input("nz", "value"),
+        Input("arm", "value"),
         Input("active-graph", "data"),
         Input("noise-toggle", "data"),
         prevent_initial_call=True,
     )
-    def update_graph1(loc, scale, sat, ampl, delay, att, sigma, activeGraph, nzOn):
+    def update_graph1(loc, scale, sat, ampl, delay, att, sigma, arm, activeGraph, nzOn):
         if activeGraph == "graph2":
             return no_update, no_update, no_update, no_update
         
@@ -80,7 +81,7 @@ def register_callbacks(app, x):
 
             f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
                 
-            zcross = zero_crossing(x, cfd)
+            zcross = zero_crossing(x, y, cfd, arm)
             tr = rise_time(x,y)
             mpv = minimize_scalar(f).x
 
@@ -113,6 +114,7 @@ def register_callbacks(app, x):
         Input("delay", "value"),
         Input("att", "value"),
         Input("nz", "value"),
+        Input("arm", "value"),
         Input("active-graph", "data"),
         Input("add-trace", "n_clicks"),
         Input("clear", "n_clicks"),
@@ -125,7 +127,7 @@ def register_callbacks(app, x):
         
         prevent_initial_call=True,
     )
-    def updateGraph2(loc, scale, sat, ampl, delay, att, sigma, activeGraph, n_clicks, n_clicksC, nzOn, fig2, zcross, tr, mpv, tableData,):
+    def updateGraph2(loc, scale, sat, ampl, delay, att, sigma, arm, activeGraph, n_clicks, n_clicksC, nzOn, fig2, zcross, tr, mpv, tableData,):
         if activeGraph == "graph1":
             return no_update, no_update, no_update, no_update, no_update, no_update
         
@@ -190,14 +192,19 @@ def register_callbacks(app, x):
                 return fig2, table, no_update, no_update, no_update, tableData
 
             else:
-                zcross = zero_crossing(x, cfd)
+                zcross = zero_crossing(x, y, cfd, arm)
+                if zcross is None:
+                    zcross = "None"
+                else:
+                    zcross = f"{zcross:.3f}"
+                    
                 tr = rise_time(x,y)
                 mpv = minimize_scalar(f).x
 
                 patch = Patch()
                 patch["data"][0]["y"] = cfd
-                
-                return patch, no_update, f"{zcross:.3f}", f"{tr:.3f}", f"{mpv:.3f}", no_update
+                print("zcross: ", zcross)
+                return patch, no_update, zcross, f"{tr:.3f}", f"{mpv:.3f}", no_update
 
 
 

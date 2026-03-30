@@ -1,6 +1,6 @@
 from dash import html, dcc
 
-def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, table):
+def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table):
     return html.Div([
         dcc.Store(id="active-graph", data="graph1"),
         dcc.Store(id="graph1-store", data=fig1),
@@ -87,6 +87,11 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, tab
                             html.Label("Saturation"),
                             dcc.Slider(id="sat", min=0.3, max=1, step=0.01, value=sat, updatemode="drag"),
                         ], id="satSlider", className="slider-container"),
+
+                        html.Div([
+                            html.Label("Arming Comparator Reference"),
+                            dcc.Slider(id="arm", min=0, max=0.5, step=0.01, value=arm, updatemode="drag"),
+                        ], id="armSlider", className="slider-container"),
                     ]),
 
                     dcc.Tab(label="Landau Parameters", value="tab-3", children=[

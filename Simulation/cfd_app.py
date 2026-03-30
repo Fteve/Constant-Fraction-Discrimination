@@ -16,13 +16,14 @@ ampl = 1
 delay = 1
 att = 0.2
 sigma = 0.01
+arm = 0
 nzOn = 0
 
 x = np.linspace(-5, 20, 1000)
 
 f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
 
-zcross = zero_crossing(x, cfd)
+zcross = zero_crossing(x, y, cfd, arm)
 tr = rise_time(x,y)
 # Looks for mpv including non-sampled points
 mpv = minimize_scalar(f).x
@@ -107,7 +108,7 @@ table.update_layout(
 #---------------------------------------------------------------------------------------------------
 app = Dash(__name__)
 
-app.layout = build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, table)
+app.layout = build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table)
 
 register_callbacks(app, x)
 

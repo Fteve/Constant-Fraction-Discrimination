@@ -33,19 +33,24 @@ def lin_interp_x(x,y,i,crossing):
     return x_interp
 
 # Function to calculate zero crossing
-def zero_crossing(x, y):
+def zero_crossing(x, y, cfd, arm):
+    # indices where incoming signal is creater than arming threshold
+    armed = np.where(y>arm)[0]
+    
+    # indices where sign of cfd changes
+    sign_change = np.where(np.diff(np.sign(cfd)))[0]
 
-    # indices where sign changes
-    sign_change = np.where(np.diff(np.sign(y)))[0]
-
-    if len(sign_change) == 0:
+    if len(sign_change) == 0 or len(armed) == 0:
         return None  # no zero crossing
-    elif len(sign_change) == 2:
-        i = sign_change[1]
+    # elif len(sign_change) == 2:
+    #     i = sign_change[1]
     else:
-        i = sign_change[0]
+        # i = sign_change[0]
+        # first index of sign_change after output is armed
+        j = np.argmax(sign_change > armed[0]) # returns an index of indices
+        i = sign_change[j] # returns an index
 
-    x_zero = lin_interp_x(x,y,i,0)
+    x_zero = lin_interp_x(x,cfd,i,0)
 
     return x_zero
 

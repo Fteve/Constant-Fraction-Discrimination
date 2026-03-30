@@ -6,7 +6,7 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm
         dcc.Store(id="graph1-store", data=fig1),
         dcc.Store(id="graph2-store", data=fig2),
         dcc.Store(id="table-data", data=[]),
-        dcc.Store(id="visibility", data=[[],[]]),
+        dcc.Store(id="visibility", data=[[True, True, True, True, True, True],[True]]),
         dcc.Store(id="noise-toggle", data=nzOn),
 
         html.Div([

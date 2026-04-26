@@ -57,12 +57,12 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm
 
                         html.Div([
                             html.Label("Delay"),
-                            dcc.Slider(id="delay", min=0, max=3.5, step=0.05, value=delay, updatemode="drag"),
+                            dcc.Slider(id="delay", min=-3, max=3.5, step=0.05, value=delay, updatemode="drag"),
                         ], id="delaySlider", className="slider-container"),
 
                         html.Div([
                             html.Label("Attenuation"),
-                            dcc.Slider(id="att", min=0, max=1, step=0.01, value=att, updatemode="drag"),
+                            dcc.Slider(id="att", min=0, max=2, step=0.01, value=att, updatemode="drag"),
                         ], id="attSlider", className="slider-container"),
                     ]),
 

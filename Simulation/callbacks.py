@@ -23,7 +23,7 @@ def register_callbacks(app, x):
         if activeGraph == "graph2":
             if visibility[1]:
                 for i, trace in enumerate(fig2["data"]):
-                    print("i:", i, "visibility: ", visibility[1][i])
+                    # print("i:", i, "visibility: ", visibility[1][i])
                     trace["visible"] = visibility[1][i]
 
             return fig2#, {'display': 'block'}, {'display': 'block'}, {'display': 'block'}
@@ -55,17 +55,18 @@ def register_callbacks(app, x):
     #---------------------------------------------------------------------------------------------------
     # Function to update graphs
     # -> Update traces of graph with slider inputs.
-    # -> Also displays MPV, Rise Time, and Zero Crossing values.
+    # -> Also displays Peak, Rise Time, and Zero Crossing values.
     # -> If function triggered by "Add Trace" button, current position of moveable trace is saved in Trace graph.
     # -> Otherwise, update the moveable trace based on inputs.
     #---------------------------------------------------------------------------------------------------
     @app.callback(
         Output("graph1-store", "data"),
         Output("graph2-store", "data"),
+        Output("graphProb-store", "data"),
         Output("sweep-table", "figure"),
         Output("zero-crossing-value", "children", allow_duplicate=True),
         Output("rise-time", "children", allow_duplicate=True),
-        Output("mpv", "children", allow_duplicate=True),
+        Output("peak", "children", allow_duplicate=True),
         Output('table-data', 'data'),
         Input("loc", "value"),
         Input("scale", "value"),
@@ -82,12 +83,12 @@ def register_callbacks(app, x):
         State("graph2-store", "data"),
         State("zero-crossing-value", "children"),
         State("rise-time", "children"),
-        State("mpv", "children"),
+        State("peak", "children"),
         State('table-data', 'data'),
         
         prevent_initial_call=True,
     )
-    def updateGraphs(loc, scale, sat, ampl, delay, att, sigma, arm, activeGraph, n_clicks, n_clicksC, nzOn, fig2, zcross, tr, mpv, tableData,):
+    def updateGraphs(loc, scale, sat, ampl, delay, att, sigma, arm, activeGraph, n_clicks, n_clicksC, nzOn, fig2, zcross, tr, peak, tableData,):
         button_id = ctx.triggered_id
 
         f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
@@ -102,7 +103,7 @@ def register_callbacks(app, x):
                 fig2["data"].append(new_trace)
 
                 # update table
-                # new_row = [n_clicks, mpv, tr, zcross]
+                # new_row = [n_clicks, peak, tr, zcross]
                 new_row = {
                     "trace": n_clicks,
                     "ampl": ampl,
@@ -110,7 +111,7 @@ def register_callbacks(app, x):
                     "att": att, 
                     "zcross": zcross,
                     "tr": tr,
-                    "mpv": mpv,
+                    "peak": peak,
                 }
 
                 tableData.append(new_row)
@@ -127,11 +128,11 @@ def register_callbacks(app, x):
                 [row["att"] for row in tableData],
                 [row["zcross"] for row in tableData],
                 [row["tr"] for row in tableData],
-                [row["mpv"] for row in tableData],
+                [row["peak"] for row in tableData],
             ] 
             
             table = go.Figure(data=[go.Table(
-                header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'MPV'],
+                header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'Peak'],
                             align='left'),
                 cells=dict(values=values,
                         align='left'))
@@ -143,7 +144,7 @@ def register_callbacks(app, x):
                 margin=dict(l=0, r=0, t=0, b=0),
             )
 
-            return no_update, fig2, table, no_update, no_update, no_update, tableData
+            return no_update, fig2, no_update, table, no_update, no_update, no_update, tableData
 
         else:
             zcross = zero_crossing(x, y, cfd, arm)
@@ -153,7 +154,7 @@ def register_callbacks(app, x):
                 zcross = f"{zcross:.3f}"
 
             tr = rise_time(x,y)
-            mpv = minimize_scalar(f).x
+            peak = minimize_scalar(f).x
 
             if activeGraph == "graph1":
                 patch = Patch()
@@ -164,13 +165,13 @@ def register_callbacks(app, x):
                 patch["data"][4]["x"] = [zcross]
                 patch["data"][5]["y"] = [arm,arm]
             
-                return patch, no_update, no_update, zcross, f"{tr:.3f}", f"{mpv:.3f}", no_update
+                return patch, no_update, no_update, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
             
             else:
                 patch = Patch()
                 patch["data"][0]["y"] = cfd
 
-                return no_update, patch, no_update, zcross, f"{tr:.3f}", f"{mpv:.3f}", no_update
+                return no_update, patch, no_update, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
             
 
 

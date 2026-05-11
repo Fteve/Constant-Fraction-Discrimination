@@ -1,10 +1,11 @@
 from dash import html, dcc
 
-def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table):
+def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table):
     return html.Div([
         dcc.Store(id="active-graph", data="graph1"),
         dcc.Store(id="graph1-store", data=fig1),
         dcc.Store(id="graph2-store", data=fig2),
+        dcc.Store(id="graphProb-store", data=figProb),
         dcc.Store(id="table-data", data=[]),
         dcc.Store(id="visibility", data=[[True, True, True, True, True, True],[True]]),
         dcc.Store(id="noise-toggle", data=nzOn),
@@ -31,12 +32,14 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm
                     ]),
 
                     html.Div([
-                        html.H4("MPV:", className="display-label"),
-                        html.Div(id="mpv", className="display"),
+                        html.H4("Peak:", className="display-label"),
+                        html.Div(id="peak", className="display"),
                     ]), 
                 ],
                 className="display-container"
                 ),
+
+                dcc.Graph(figure=figProb, id="prob-plot", className="graph-container"),
             ],
             className="left-column"
             )
@@ -52,7 +55,7 @@ def build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm
                     dcc.Tab(label="Signals", value="tab-1", children=[
                         html.Div([
                             html.Label("Amplitude"),
-                            dcc.Slider(id="ampl", min=0.1, max=3, step=0.02, value=ampl, updatemode="drag"),
+                            dcc.Slider(id="ampl", min=0.1, max=3, step=0.0145, value=ampl, updatemode="drag"),
                         ], id="amplSlider", className="slider-container"),
 
                         html.Div([

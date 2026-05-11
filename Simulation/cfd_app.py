@@ -25,14 +25,21 @@ f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, si
 
 zcross = zero_crossing(x, y, cfd, arm)
 tr = rise_time(x,y)
+
+# Energy probability distribution
+xP = np.linspace(0, 10, 200)
+fProb = lambda x: -ampl * landau.pdf(x, loc=2, scale=scale)
+probDist = -fProb(xP)
 # Looks for mpv including non-sampled points
-mpv = minimize_scalar(f).x
+mpvX = minimize_scalar(fProb).x
+mpvY = landau.pdf(mpvX, loc=2, scale=scale)
 
 #---------------------------------------------------------------------------------------------------
 # Generate figures and table
 #---------------------------------------------------------------------------------------------------
 fig1 = go.Figure()
 fig2 = go.Figure()
+figProb = go.Figure()
 
 # formatting
 fig1.update_layout(
@@ -75,6 +82,26 @@ fig2.update_layout(
     margin=dict(l=50, r=150, t=80, b=50)
 )
 
+figProb.update_layout(
+    showlegend=True,  # or always True for both
+    title="Amplitude Probability Distribution",
+    xaxis_range=(0, 8), 
+    yaxis_range=(0,0.6), 
+    width=1050, 
+    height=600,
+    autosize=False,
+    legend=dict(
+        x=1.01,    # slightly outside the figure
+        y=1,
+        xanchor='left',   # anchor relative to x
+        yanchor='top',
+        bgcolor='rgba(0,0,0,0)', 
+        bordercolor='black',
+        borderwidth=1
+    ),
+    margin=dict(l=50, r=150, t=80, b=50)
+)
+
 # add traces
 fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
 fig1.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
@@ -85,9 +112,12 @@ fig1.add_trace(go.Scatter(x=[-5,11], y=[arm,arm], mode="lines", name="arming thr
 
 fig2.add_trace(go.Scatter(x=x, y=cfd))
 
+figProb.add_trace(go.Scatter(x=xP, y=probDist))
+figProb.add_trace(go.Scatter(x=[mpvX], y=[mpvY], name="amplitude", mode="markers"))
+
 # table for Sweep Graph
 table = go.Figure(data=[go.Table(
-    header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'MPV'],
+    header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'Peak'],
                 # line_color='darkslategray',
                 # fill_color='lightskyblue',
                 align='left'),
@@ -109,7 +139,7 @@ table.update_layout(
 #---------------------------------------------------------------------------------------------------
 app = Dash(__name__)
 
-app.layout = build_layout(fig1, fig2, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table)
+app.layout = build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table)
 
 register_callbacks(app, x)
 

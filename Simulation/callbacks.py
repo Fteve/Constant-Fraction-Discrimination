@@ -163,7 +163,6 @@ def register_callbacks(app, x, xP, probDist, amplStepSize):
             peak = minimize_scalar(f).x
 
             probInd = int((ampl - 0.1)/amplStepSize)
-            print("ind: ", probInd)
             patchProb = Patch()
             patchProb["data"][1]["x"] = [xP[probInd]]
             patchProb["data"][1]["y"] = [probDist[probInd]]

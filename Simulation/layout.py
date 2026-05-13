@@ -38,8 +38,76 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
                 ],
                 className="display-container"
                 ),
+                
+                html.Div([
+                    html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
 
-                dcc.Graph(figure=figProb, id="prob-plot", className="graph-container"),
+                    html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),
+                ],
+                className="trace-buttons-container"), 
+                
+                dcc.Tabs(
+                    id="tabs",
+                    value="tab-1",
+                    children=[
+                        dcc.Tab(label="Signals", value="tab-1", children=[
+                            html.Div([
+                                html.Label("Amplitude"),
+                                dcc.Slider(id="ampl", min=0.1, max=4.09, step=amplStepSize, value=ampl, updatemode="drag"),
+                            ], id="amplSlider", className="slider-container"),
+
+                            html.Div([
+                                html.Label("Delay"),
+                                dcc.Slider(id="delay", min=-3, max=3.5, step=0.05, value=delay, updatemode="drag"),
+                            ], id="delaySlider", className="slider-container"),
+
+                            html.Div([
+                                html.Label("Attenuation"),
+                                dcc.Slider(id="att", min=0, max=2, step=0.01, value=att, updatemode="drag"),
+                            ], id="attSlider", className="slider-container"),
+                        ]),
+
+                        dcc.Tab(label="Noise & Saturation", value="tab-2", children=[
+                            dcc.Checklist(
+                                id="slider-toggle",
+                                options=[
+                                    {"label": "Noise", "value": "nz"}
+                                ],
+                                value=[],
+                                className="checklist"
+                            ),
+                            
+                            html.Div([
+                                html.Label("Noise"),
+                                dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
+                            ], id="nzSlider", className="slider-container"),
+
+                            html.Div([
+                                html.Label("Saturation"),
+                                dcc.Slider(id="sat", min=0.3, max=1.5, step=0.01, value=sat, updatemode="drag"),
+                            ], id="satSlider", className="slider-container"),
+
+                            html.Div([
+                                html.Label("Arming Comparator Reference"),
+                                dcc.Slider(id="arm", min=0, max=0.5, step=0.01, value=arm, updatemode="drag"),
+                            ], id="armSlider", className="slider-container"),
+                        ]),
+
+                        dcc.Tab(label="Landau Parameters", value="tab-3", children=[
+                            html.Div([
+                                html.Label("Location"),
+                                dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
+                            ], id="locSlider", className="slider-container"),
+
+                            html.Div([
+                                html.Label("Scale"),
+                                dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
+                            ], id="scaleSlider", className="slider-container"),  
+                        ]),
+                    ],
+                className="tab-container"
+                ),
+
             ],
             className="left-column"
             )
@@ -47,69 +115,9 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
 
 
         html.Div([
+            dcc.Graph(figure=figProb, id="prob-plot", className="graph-container"),
 
-            dcc.Tabs(
-                id="tabs",
-                value="tab-1",
-                children=[
-                    dcc.Tab(label="Signals", value="tab-1", children=[
-                        html.Div([
-                            html.Label("Amplitude"),
-                            dcc.Slider(id="ampl", min=0.1, max=4.09, step=amplStepSize, value=ampl, updatemode="drag"),
-                        ], id="amplSlider", className="slider-container"),
-
-                        html.Div([
-                            html.Label("Delay"),
-                            dcc.Slider(id="delay", min=-3, max=3.5, step=0.05, value=delay, updatemode="drag"),
-                        ], id="delaySlider", className="slider-container"),
-
-                        html.Div([
-                            html.Label("Attenuation"),
-                            dcc.Slider(id="att", min=0, max=2, step=0.01, value=att, updatemode="drag"),
-                        ], id="attSlider", className="slider-container"),
-                    ]),
-
-                    dcc.Tab(label="Noise & Saturation", value="tab-2", children=[
-                        dcc.Checklist(
-                            id="slider-toggle",
-                            options=[
-                                {"label": "Noise", "value": "nz"}
-                            ],
-                            value=[],
-                            className="checklist"
-                        ),
-                        
-                        html.Div([
-                            html.Label("Noise"),
-                            dcc.Slider(id="nz", min=0, max=0.05, step=0.001, value=sigma, updatemode="drag"),
-                        ], id="nzSlider", className="slider-container"),
-
-                        html.Div([
-                            html.Label("Saturation"),
-                            dcc.Slider(id="sat", min=0.3, max=1.5, step=0.01, value=sat, updatemode="drag"),
-                        ], id="satSlider", className="slider-container"),
-
-                        html.Div([
-                            html.Label("Arming Comparator Reference"),
-                            dcc.Slider(id="arm", min=0, max=0.5, step=0.01, value=arm, updatemode="drag"),
-                        ], id="armSlider", className="slider-container"),
-                    ]),
-
-                    dcc.Tab(label="Landau Parameters", value="tab-3", children=[
-                        html.Div([
-                            html.Label("Location"),
-                            dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
-                        ], id="locSlider", className="slider-container"),
-
-                        html.Div([
-                            html.Label("Scale"),
-                            dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
-                        ], id="scaleSlider", className="slider-container"),  
-                    ]),
-                ]
-            ),
-
-            html.Div([
+             html.Div([
                 html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
 
                 html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),
@@ -117,7 +125,7 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
             className="trace-buttons-container"),
 
             dcc.Graph(
-                id='sweep-table', figure=table, className="table") 
+                id='sweep-table', figure=table, className="table"),
 
         ],
         className="right-column"

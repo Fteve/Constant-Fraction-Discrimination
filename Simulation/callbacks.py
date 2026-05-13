@@ -3,7 +3,7 @@ from scipy.optimize import minimize_scalar
 import plotly.graph_objects as go
 from functions import signalCalcs, lin_interp_x, zero_crossing, rise_time
 
-def register_callbacks(app, x):
+def register_callbacks(app, x, xP, probDist, amplStepSize):
     #---------------------------------------------------------------------------------------------------
     # Function to show the correct graph
     # -> Takes the figure data from respective stores.
@@ -11,28 +11,34 @@ def register_callbacks(app, x):
     #---------------------------------------------------------------------------------------------------
     @app.callback(
             Output("cfd-plot", "figure"),
+            Output("prob-plot", "figure"),
             # Output("sweep-table", "style"),
             # Output("add-trace", "style"),
             # Output("clear", "style"),
             Input("active-graph", "data"),
             Input("graph1-store", "data"),
             Input("graph2-store", "data"),
+            Input("graphProb-store", "data"),
             Input("visibility", "data"),
     )
-    def update_graph(activeGraph, fig1, fig2, visibility):
+    def update_graph(activeGraph, fig1, fig2, figProb, visibility):
         if activeGraph == "graph2":
             if visibility[1]:
                 for i, trace in enumerate(fig2["data"]):
                     # print("i:", i, "visibility: ", visibility[1][i])
                     trace["visible"] = visibility[1][i]
 
-            return fig2#, {'display': 'block'}, {'display': 'block'}, {'display': 'block'}
+            fig = fig2
+            
         else:   
             if visibility[0]:
                 for i, trace in enumerate(fig1["data"]):
                     trace["visible"] = visibility[0][i]
 
-            return fig1#, {'display': 'none'}, {'display': 'none'}, {'display': 'none'}
+            fig = fig1
+        
+        return fig, figProb
+        
         
 
     #---------------------------------------------------------------------------------------------------
@@ -156,22 +162,30 @@ def register_callbacks(app, x):
             tr = rise_time(x,y)
             peak = minimize_scalar(f).x
 
-            if activeGraph == "graph1":
-                patch = Patch()
-                patch["data"][0]["y"] = y
-                patch["data"][1]["y"] = delsig
-                patch["data"][2]["y"] = attsig
-                patch["data"][3]["y"] = cfd
-                patch["data"][4]["x"] = [zcross]
-                patch["data"][5]["y"] = [arm,arm]
+            probInd = int((ampl - 0.1)/amplStepSize)
+            print("ind: ", probInd)
+            patchProb = Patch()
+            patchProb["data"][1]["x"] = [xP[probInd]]
+            patchProb["data"][1]["y"] = [probDist[probInd]]
             
-                return patch, no_update, no_update, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
+            if activeGraph == "graph1":
+                patch1 = Patch()
+                patch1["data"][0]["y"] = y
+                patch1["data"][1]["y"] = delsig
+                patch1["data"][2]["y"] = attsig
+                patch1["data"][3]["y"] = cfd
+                patch1["data"][4]["x"] = [zcross]
+                patch1["data"][5]["y"] = [arm,arm]
+
+                
+            
+                return patch1, no_update, patchProb, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
             
             else:
-                patch = Patch()
-                patch["data"][0]["y"] = cfd
+                patch2 = Patch()
+                patch2["data"][0]["y"] = cfd
 
-                return no_update, patch, no_update, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
+                return no_update, patch2, patchProb, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
             
 
 

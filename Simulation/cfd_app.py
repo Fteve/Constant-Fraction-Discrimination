@@ -19,6 +19,8 @@ sigma = 0.01
 arm = 0
 nzOn = 0
 
+amplStepSize = 0.01 #step size for amplitude slide bar
+
 x = np.linspace(-5, 20, 1000)
 
 f, y, delsig, attsig, cfd = signalCalcs(x, loc, scale, sat, ampl, delay, att, sigma, nzOn)
@@ -27,7 +29,7 @@ zcross = zero_crossing(x, y, cfd, arm)
 tr = rise_time(x,y)
 
 # Energy probability distribution
-xP = np.linspace(0, 10, 200)
+xP = np.linspace(0, 8, 400)
 fProb = lambda x: -ampl * landau.pdf(x, loc=2, scale=scale)
 probDist = -fProb(xP)
 # Looks for mpv including non-sampled points
@@ -43,8 +45,9 @@ figProb = go.Figure()
 
 # formatting
 fig1.update_layout(
-    showlegend=True,  # or always True for both
-    title="CFD Simulation",
+    showlegend=True,
+    title="CFD Model",
+    title_font_size=32,
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
     width=1050, 
@@ -63,8 +66,9 @@ fig1.update_layout(
 )
 
 fig2.update_layout(
-    showlegend=True,  # or always True for both
+    showlegend=True,
     title="CFD Simulation",
+    title_font_size=32,
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
     width=1050, 
@@ -83,22 +87,23 @@ fig2.update_layout(
 )
 
 figProb.update_layout(
-    showlegend=True,  # or always True for both
+    showlegend=False, 
     title="Amplitude Probability Distribution",
+    title_font_size=32,
     xaxis_range=(0, 8), 
     yaxis_range=(0,0.6), 
     width=1050, 
     height=600,
     autosize=False,
-    legend=dict(
-        x=1.01,    # slightly outside the figure
-        y=1,
-        xanchor='left',   # anchor relative to x
-        yanchor='top',
-        bgcolor='rgba(0,0,0,0)', 
-        bordercolor='black',
-        borderwidth=1
-    ),
+    # legend=dict(
+    #     x=1.01,    # slightly outside the figure
+    #     y=1,
+    #     xanchor='left',   # anchor relative to x
+    #     yanchor='top',
+    #     bgcolor='rgba(0,0,0,0)', 
+    #     bordercolor='black',
+    #     borderwidth=1
+    # ),
     margin=dict(l=50, r=150, t=80, b=50)
 )
 
@@ -113,7 +118,7 @@ fig1.add_trace(go.Scatter(x=[-5,11], y=[arm,arm], mode="lines", name="arming thr
 fig2.add_trace(go.Scatter(x=x, y=cfd))
 
 figProb.add_trace(go.Scatter(x=xP, y=probDist))
-figProb.add_trace(go.Scatter(x=[mpvX], y=[mpvY], name="amplitude", mode="markers"))
+figProb.add_trace(go.Scatter(x=[mpvX], y=[mpvY], name="amplitude", mode="markers", marker_size=14, marker_symbol="x"))
 
 # table for Sweep Graph
 table = go.Figure(data=[go.Table(
@@ -139,9 +144,9 @@ table.update_layout(
 #---------------------------------------------------------------------------------------------------
 app = Dash(__name__)
 
-app.layout = build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table)
+app.layout = build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table, amplStepSize)
 
-register_callbacks(app, x)
+register_callbacks(app, x, xP, probDist, amplStepSize)
 
 
 if __name__ == "__main__":

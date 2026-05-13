@@ -1,6 +1,6 @@
 from dash import html, dcc
 
-def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table):
+def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table, amplStepSize):
     return html.Div([
         dcc.Store(id="active-graph", data="graph1"),
         dcc.Store(id="graph1-store", data=fig1),
@@ -55,7 +55,7 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
                     dcc.Tab(label="Signals", value="tab-1", children=[
                         html.Div([
                             html.Label("Amplitude"),
-                            dcc.Slider(id="ampl", min=0.1, max=3, step=0.0145, value=ampl, updatemode="drag"),
+                            dcc.Slider(id="ampl", min=0.1, max=4.09, step=amplStepSize, value=ampl, updatemode="drag"),
                         ], id="amplSlider", className="slider-container"),
 
                         html.Div([
@@ -86,7 +86,7 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
 
                         html.Div([
                             html.Label("Saturation"),
-                            dcc.Slider(id="sat", min=0.3, max=1, step=0.01, value=sat, updatemode="drag"),
+                            dcc.Slider(id="sat", min=0.3, max=1.5, step=0.01, value=sat, updatemode="drag"),
                         ], id="satSlider", className="slider-container"),
 
                         html.Div([

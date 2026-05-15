@@ -16,7 +16,7 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
                 
                 html.Div([
                     html.Div([
-                        html.H4("Zero Crossing:", className="display-label"),
+                        html.H4("Zero-Crossing:", className="display-label"),
                         html.Div(id="zero-crossing-value", className="display"),
                     ]),
 

@@ -113,7 +113,7 @@ fig1.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
 fig1.add_trace(go.Scatter(x=x, y=attsig, name="attenuated"))
 fig1.add_trace(go.Scatter(x=x, y=cfd, name="CFD"))
 fig1.add_trace(go.Scatter(x=[-5,11], y=[arm,arm], mode="lines", name="arming thrs", line=dict(dash="dash")))
-fig1.add_trace(go.Scatter(x=[zcross], y=[0], name="zero crossing", mode="markers", marker_size=8))
+fig1.add_trace(go.Scatter(x=[zcross], y=[0], name="zero-crossing", mode="markers", marker_size=8))
 
 fig2.add_trace(go.Scatter(x=x, y=cfd))
 
@@ -122,7 +122,7 @@ figProb.add_trace(go.Scatter(x=[mpvX], y=[mpvY], name="amplitude", mode="markers
 
 # table for Sweep Graph
 table = go.Figure(data=[go.Table(
-    header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero Crossing', 'Rise Time', 'Peak'],
+    header=dict(values=['Trace', 'Amplitude', 'Delay', 'Attenuation', 'Zero-Crossing', 'Rise Time', 'Peak'],
                 # line_color='darkslategray',
                 # fill_color='lightskyblue',
                 align='left'),

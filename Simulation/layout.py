@@ -12,10 +12,7 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
 
         html.Div([
             html.Div([
-                html.Div([
-                    html.Button('Mode: Signal Components', id='show-graph', n_clicks=0, className="mode-button"),
-                ],
-                className="mode-button-container"),
+                
                 
 
                 dcc.Graph(figure=fig1, id="cfd-plot", className="graph-container"),
@@ -39,18 +36,11 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
                 className="display-container"
                 ),
                 
-                html.Div([
-                    html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
-
-                    html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),
-                ],
-                className="trace-buttons-container"), 
-                
                 dcc.Tabs(
                     id="tabs",
                     value="tab-1",
                     children=[
-                        dcc.Tab(label="Signals", value="tab-1", children=[
+                        dcc.Tab(label="CFD Parameters", value="tab-1", children=[
                             html.Div([
                                 html.Label("Amplitude"),
                                 dcc.Slider(id="ampl", min=0.1, max=4.09, step=amplStepSize, value=ampl, updatemode="drag"),
@@ -93,14 +83,14 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
                             ], id="armSlider", className="slider-container"),
                         ]),
 
-                        dcc.Tab(label="Landau Parameters", value="tab-3", children=[
+                        dcc.Tab(label="Incoming Signal", value="tab-3", children=[
                             html.Div([
-                                html.Label("Location"),
+                                html.Label("Timing"),
                                 dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),
                             ], id="locSlider", className="slider-container"),
 
                             html.Div([
-                                html.Label("Scale"),
+                                html.Label("Shape"),
                                 dcc.Slider(id="scale", min=0.1, max=2, step=0.02, value=scale, updatemode="drag"),
                             ], id="scaleSlider", className="slider-container"),  
                         ]),
@@ -118,6 +108,8 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
             dcc.Graph(figure=figProb, id="prob-plot", className="graph-container"),
 
              html.Div([
+                html.Button('Mode: Signal Components', id='show-graph', n_clicks=0, className="mode-button"), 
+
                 html.Button("Add Trace", id="add-trace", n_clicks=0, className="trace-button"),
 
                 html.Button("Clear", id="clear", n_clicks=0, className="trace-button"),

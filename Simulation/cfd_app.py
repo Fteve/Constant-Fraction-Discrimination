@@ -67,7 +67,7 @@ fig1.update_layout(
 
 fig2.update_layout(
     showlegend=True,
-    title="CFD Simulation",
+    title="CFD Model",
     title_font_size=32,
     xaxis_range=(-5, 10), 
     yaxis_range=(-0.5,1), 
@@ -112,8 +112,8 @@ fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
 fig1.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
 fig1.add_trace(go.Scatter(x=x, y=attsig, name="attenuated"))
 fig1.add_trace(go.Scatter(x=x, y=cfd, name="CFD"))
-fig1.add_trace(go.Scatter(x=[zcross], y=[0], name="zero crossing", mode="markers"))
 fig1.add_trace(go.Scatter(x=[-5,11], y=[arm,arm], mode="lines", name="arming thrs", line=dict(dash="dash")))
+fig1.add_trace(go.Scatter(x=[zcross], y=[0], name="zero crossing", mode="markers", marker_size=8))
 
 fig2.add_trace(go.Scatter(x=x, y=cfd))
 

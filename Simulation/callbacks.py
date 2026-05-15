@@ -173,10 +173,8 @@ def register_callbacks(app, x, xP, probDist, amplStepSize):
                 patch1["data"][1]["y"] = delsig
                 patch1["data"][2]["y"] = attsig
                 patch1["data"][3]["y"] = cfd
-                patch1["data"][4]["x"] = [zcross]
-                patch1["data"][5]["y"] = [arm,arm]
-
-                
+                patch1["data"][4]["y"] = [arm,arm]
+                patch1["data"][5]["x"] = [zcross]              
             
                 return patch1, no_update, patchProb, no_update, zcross, f"{tr:.3f}", f"{peak:.3f}", no_update
             

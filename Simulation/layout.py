@@ -2,7 +2,7 @@ from dash import html, dcc
 
 def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma, sat, arm, table, amplStepSize):
     return html.Div([
-        dcc.Store(id="active-graph", data="graph1"),
+        dcc.Store(id="active-graph", data="graph2"),
         dcc.Store(id="graph1-store", data=fig1),
         dcc.Store(id="graph2-store", data=fig2),
         dcc.Store(id="graphProb-store", data=figProb),
@@ -12,9 +12,6 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
 
         html.Div([
             html.Div([
-                
-                
-
                 dcc.Graph(figure=fig1, id="cfd-plot", className="graph-container"),
                 
                 html.Div([

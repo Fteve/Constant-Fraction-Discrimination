@@ -88,7 +88,7 @@ fig2.update_layout(
 
 figProb.update_layout(
     showlegend=False, 
-    title="Amplitude Probability Distribution",
+    title="Amplitude Probability Density Function",
     title_font_size=32,
     xaxis_range=(0, 8), 
     yaxis_range=(0,0.6), 

@@ -108,7 +108,7 @@ figProb.update_layout(
 )
 
 # add traces
-fig1.add_trace(go.Scatter(x=x, y=y, name="signal"))
+fig1.add_trace(go.Scatter(x=x, y=y, name="input"))
 fig1.add_trace(go.Scatter(x=x, y=delsig, name="delayed"))
 fig1.add_trace(go.Scatter(x=x, y=attsig, name="attenuated"))
 fig1.add_trace(go.Scatter(x=x, y=cfd, name="CFD"))

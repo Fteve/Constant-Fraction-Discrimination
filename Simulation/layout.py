@@ -80,7 +80,7 @@ def build_layout(fig1, fig2, figProb, nzOn, loc, scale, ampl, delay, att, sigma,
                             ], id="armSlider", className="slider-container"),
                         ]),
 
-                        dcc.Tab(label="Incoming Signal", value="tab-3", children=[
+                        dcc.Tab(label="Input Signal", value="tab-3", children=[
                             html.Div([
                                 html.Label("Timing"),
                                 dcc.Slider(id="loc", min=-2, max=5, step=0.05, value=loc, updatemode="drag"),

@@ -10,6 +10,7 @@ if not os.path.exists(csv_file):
     exit()
 
 
+
 df = pd.read_csv(csv_file, header=None)
 
 df = df.replace("'", "", regex=True)
@@ -19,26 +20,45 @@ df = df.apply(pd.to_numeric, errors='coerce')
 # optional: drop bad rows if any conversion failed
 df = df.dropna()
 
+pairs = []
+
+x_max_ns = 11  # adjust to your desired cutoff (ns)
+
 # scale x columns (0,2,4,...)
 for col in range(0, df.shape[1], 2):
-    df[col] = df[col] * 1e9
+    x = df[col] * 1e9
+    y = df[col + 1] * 1e3
 
-# scale y columns (1,3,5...)
-for col in range(1, df.shape[1], 2):
-    df[col] = df[col] * 1e3
+    mask = x <= x_max_ns
 
-# --- define cutoff in ns ---
-x_max = 10  # your requested cutoff
+    x_trim = x[mask].reset_index(drop=True)
+    y_trim = y[mask].reset_index(drop=True)
 
-# --- build mask: keep rows where ALL x-columns are <= cutoff ---
-mask = pd.Series(True, index=df.index)
+    pairs.append((x_trim, y_trim))
 
-for col in range(0, df.shape[1], 2):
-    mask &= df[col] <= x_max
+# pad all traces to same length with NaN
+max_len = max(len(x) for x, y in pairs)
 
-df = df[mask]
+out = pd.DataFrame()
+
+for i, (x, y) in enumerate(pairs):
+    x = x.reindex(range(max_len))
+    y = y.reindex(range(max_len))
+
+    out[2*i] = x
+    out[2*i + 1] = y
+
+
 
 output_file = "./csvFiles/" + os.path.splitext(csv_file_name)[0] + "_CLEANED.csv"
-df.to_csv(output_file, index=False, header=False)
+
+name, ext = os.path.splitext(output_file)
+i = 1
+
+while os.path.exists(output_file):
+    output_file = f"{name}_{i}{ext}"
+    i += 1
+
+out.to_csv(output_file, index=False, header=False)
 
 print("Done: converted to ns scale + trimmed")

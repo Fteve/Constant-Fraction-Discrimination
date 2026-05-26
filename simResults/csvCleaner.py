@@ -1,6 +1,8 @@
 import pandas as pd
 import os
 
+x_max_ns = 4  # adjust to your desired cutoff (ns)
+
 csv_file_name = input("Enter CSV filename: ")
 csv_file = "./csvFiles/" + csv_file_name + ".csv"
 
@@ -22,7 +24,6 @@ df = df.dropna()
 
 pairs = []
 
-x_max_ns = 11  # adjust to your desired cutoff (ns)
 
 # scale x columns (0,2,4,...)
 for col in range(0, df.shape[1], 2):
@@ -50,7 +51,7 @@ for i, (x, y) in enumerate(pairs):
 
 
 
-output_file = "./csvFiles/" + os.path.splitext(csv_file_name)[0] + "_CLEANED.csv"
+output_file = "../../csvFiles/" + os.path.splitext(csv_file_name)[0] + "_CLEANED.csv"
 
 name, ext = os.path.splitext(output_file)
 i = 1

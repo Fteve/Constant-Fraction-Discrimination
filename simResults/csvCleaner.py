@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-x_max_ns = 4  # adjust to your desired cutoff (ns)
+x_max_ns = 51  # adjust to your desired cutoff (ns)
 
 csv_file_name = input("Enter CSV filename: ")
 csv_file = "./csvFiles/" + csv_file_name + ".csv"
@@ -18,9 +18,6 @@ df = pd.read_csv(csv_file, header=None)
 df = df.replace("'", "", regex=True)
 # --- FORCE numeric conversion ---
 df = df.apply(pd.to_numeric, errors='coerce')
-
-# optional: drop bad rows if any conversion failed
-df = df.dropna()
 
 pairs = []
 
